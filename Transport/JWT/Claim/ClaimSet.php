@@ -1,10 +1,10 @@
 <?php
-namespace Transport\JWT\Claim;
+namespace DashApi\Transport\JWT\Claim;
 
 /**
  * Class ClaimSet
  *
- * @package SIT\Transport\Token\Json\JWT\Claim
+ * @package \DashApi\Transport\JWT\Claim
  * @author Tim Turner <tim.turner@sports-it.com>
  */
 class ClaimSet {

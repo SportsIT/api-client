@@ -1,10 +1,10 @@
 <?php
-namespace Transport\JWT;
+namespace DashApi\Transport\JWT;
 
 /**
  * Class JSONWebToken
  *
- * @package SIT\Transport\Token\Json\JWT
+ * @package \DashApi\Transport\JWT
  * @author Tim Turner <tim.turner@sports-it.com>
  */
 class JSONWebToken {

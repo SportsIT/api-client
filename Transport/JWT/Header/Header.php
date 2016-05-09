@@ -1,10 +1,10 @@
 <?php
-namespace Transport\JWT\Header;
+namespace DashApi\Transport\JWT\Header;
 
 /**
  * Class Header
  *
- * @package SIT\Transport\Token\Json\JWT\Header
+ * @package \DashApi\Transport\JWT\Header
  * @author Tim Turner <tim.turner@sports-it.com>
  */
 class Header {

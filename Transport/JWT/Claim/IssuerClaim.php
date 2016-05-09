@@ -1,5 +1,5 @@
 <?php
-namespace Transport\JWT\Claim;
+namespace DashApi\Transport\JWT\Claim;
 
 /**
  * Created by Tim Turner <tim.turner@sports-it.com>

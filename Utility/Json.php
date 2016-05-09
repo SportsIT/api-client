@@ -1,5 +1,5 @@
 <?php
-namespace SIT\DashApi\Utility;
+namespace DashApi\Utility;
 
 /**
  * Class Json

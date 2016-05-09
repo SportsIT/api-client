@@ -4,7 +4,7 @@
  * Created on: [3/31/16]
  */
 
-namespace Transport\JWT\Claim;
+namespace DashApi\Transport\JWT\Claim;
 
 class EmployeeIDClaim extends AbstractClaim
 {

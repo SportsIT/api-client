@@ -1,5 +1,5 @@
 <?php
-namespace Transport\JWT\Header;
+namespace DashApi\Transport\JWT\Header;
 
 /**
  * Created by Tim Turner <tim.turner@sports-it.com>

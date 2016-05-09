@@ -1,12 +1,12 @@
 <?php
-namespace SIT\DashApi;
+namespace DashApi\Client;
 
-use SIT\DashApi\Utility\Json;
+use DashApi\Utility\Json;
 
 use Guzzle\Http\Client as GuzzleClient;
 
-use Transport\JWT;
-use Security\Signature\JSONWebSignature;
+use DashApi\Transport\JWT;
+use DashApi\Security\Signature\JSONWebSignature;
 
 /**
  * Class Client
@@ -58,7 +58,7 @@ final class Client
   protected $claims;
   
   /**
-   * @var \Transport\JWT\JSONWebToken
+   * @var \DashApi\Transport\JWT\JSONWebToken
    */
   protected $jsonWebToken;
   
