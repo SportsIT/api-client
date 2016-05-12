@@ -3,12 +3,14 @@ namespace DashApi\Client;
 
 use DashApi\Utility\Json;
 
-use DashApi\Transport\JWT;
+use DashApi\Transport\Token\JWT;
 use DashApi\Security\Signature\JSONWebSignature;
-use DashApi\Transport\OAuth2\Token;
+use DashApi\Transport\Token\OAuth2;
 
-use Guzzle\Http\Client as GuzzleClient;
+use GuzzleHttp\Client as GuzzleClient;
 use Carbon\Carbon;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Class Client
@@ -60,7 +62,7 @@ final class Client
   protected $claims;
   
   /**
-   * @var \DashApi\Transport\JWT\JSONWebToken
+   * @var \DashApi\Transport\Token\JWT\JSONWebToken
    */
   protected $jsonWebToken;
   
@@ -141,21 +143,22 @@ final class Client
   
   /**
    * @param string $resourcePath
-   * @return \Guzzle\Http\EntityBodyInterface|string
+   * @return StreamInterface|string Guzzle\Http\EntityBodyInterface -> StreamInterface
    */
   public function get($resourcePath) {
     $this->validateAccessToken();
     
+    /** @var ResponseInterface $result */
     $result = (new GuzzleClient)->get(
-      $this->apiUrl . $resourcePath,
-      [
-        'Content-Type' => 'application/json', 
-        'Authorization' => ucfirst($this->authTokenType) . ' ' . $this->accessToken
+      $this->apiUrl . $resourcePath, [
+        'headers' => [
+          'Content-Type' => 'application/json',
+          'Authorization' => ucfirst($this->authTokenType) . ' ' . $this->accessToken
+        ]
       ]
     );
     
-    $response = $result->send();
-    return $response->getBody(true);
+    return $result->getBody();
   }
   
   /**
@@ -175,15 +178,14 @@ final class Client
     }
     
     $result = (new GuzzleClient)->post(
-      $this->getTokenCreateUrl(), ['Content-Type' => 'application/json'],
-      $this->getJsonAPIRequestBody(),
-      [
+      $this->getTokenCreateUrl(), [
+        'headers' => ['Content-Type' => 'application/json'],
+        'body' => $this->getJsonAPIRequestBody(),
         'verify' => false     // @todo: fix for self-signed cert
       ]
     );
-    $response = $result->send();
     
-    $responseData = Json::decode($response->getBody());
+    $responseData = Json::decode($result->getBody());
     if (empty($responseData->data[0]->attributes->access_token)) {
       throw new \RuntimeException('Response did not contain valid access token');
     }
