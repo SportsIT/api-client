@@ -1,13 +1,14 @@
 <?php
-namespace DashApi\Transport\JWT;
+namespace DashApi\Transport\Token\JWT;
+use DashApi\Transport\Token\AbstractToken;
 
 /**
  * Class JSONWebToken
  *
- * @package \DashApi\Transport\JWT
+ * @package \DashApi\Transport\Token\JWT
  * @author Tim Turner <tim.turner@sports-it.com>
  */
-class JSONWebToken {
+class JSONWebToken extends AbstractToken {
   const NAME = 'JSONWEBTOKEN';
 
   /**
@@ -39,8 +40,9 @@ class JSONWebToken {
    * @param mixed $tokenData
    */
   public function __construct($tokenData) {
-    $this->header = new Header\Header();
-    $this->claims = new Claim\ClaimSet();
+    /* @deprecated in favor of using HeaderAttribute, ClaimsSetAttribute */
+    //$this->header = new Header\Header();
+    //$this->claims = new Claim\ClaimSet();
     
     // Assume parsed token
     if (is_string($tokenData) && strpos($tokenData, '.') !== false) {
@@ -78,13 +80,17 @@ class JSONWebToken {
     } else {
       throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JSONWebToken initialization');
     }
-  
+    
+    /* @deprecated in favor of letting HeaderAttribute manage FQCN resolution
     foreach ($header as $name => $value) {
       if ($className = $this->jwtClassResolver($name, 'Header')) {
         $this->header->set($name, new $className($value));
       }
     }
-
+     */
+    $this->header = new Attribute\HeaderAttribute($header);
+  
+    /* @deprecated in favor of letting ClaimsSetAttribute manage FQCN resolution
     // Init JWT Claims Set
     foreach ($payload as $name => $value) {
       if ($className = $this->jwtClassResolver($name, 'Claim')) {
@@ -92,6 +98,8 @@ class JSONWebToken {
         $this->claims->set($name, new $className($value));
       }
     }
+     */
+    $this->claims = new Attribute\ClaimsSetAttribute($payload);
 
     $expiration = $this->claims->get('exp', null);
     $this->setExpireDate(($expiration ? $expiration->value : ''));
@@ -151,6 +159,54 @@ class JSONWebToken {
    */
   public function __toString() {
     return (string)$this->token;
+  }
+  
+  public function getID() {
+    // TODO: Implement getID() method.
+  }
+  
+  public function getRoles() {
+    // TODO: Implement getRoles() method.
+  }
+  
+  public function getCredentials() {
+    // TODO: Implement getCredentials() method.
+  }
+  
+  public function getClient() {
+    // TODO: Implement getClient() method.
+  }
+  
+  public function setClient() {
+    // TODO: Implement setClient() method.
+  }
+  
+  public function isAuthenticated() {
+    // TODO: Implement isAuthenticated() method.
+  }
+  
+  public function setAuthenticated($isAuthenticated) {
+    // TODO: Implement setAuthenticated() method.
+  }
+  
+  public function getAttributes() {
+    // TODO: Implement getAttributes() method.
+  }
+  
+  public function setAttributes(array $attributes) {
+    // TODO: Implement setAttributes() method.
+  }
+  
+  public function hasAttribute($name) {
+    // TODO: Implement hasAttribute() method.
+  }
+  
+  public function getAttribute($name) {
+    // TODO: Implement getAttribute() method.
+  }
+  
+  public function setAttribute($name, $value) {
+    // TODO: Implement setAttribute() method.
   }
   
   /**
@@ -232,72 +288,4 @@ class JSONWebToken {
     return $output;
   }
 
-  /**
-   * @param $name
-   * @param $subNamespace
-   * @return bool|string
-   */
-  public static function jwtClassResolver($name, $subNamespace) {
-    $className = false;
-
-    if ($subNamespace == 'Claim') {
-
-      switch ($name) {
-        case Claim\AudienceClaim::NAME:
-          $className = 'Claim\AudienceClaim';
-          break;
-
-        case Claim\ExpirationTimeClaim::NAME:
-          $className = 'Claim\ExpirationTimeClaim';
-          break;
-
-        case Claim\IssuedAtClaim::NAME:
-          $className = 'Claim\IssuedAtClaim';
-          break;
-
-        case Claim\IssuerClaim::NAME:
-          $className = 'Claim\IssuerClaim';
-          break;
-
-        case Claim\JWTIDClaim::NAME:
-          $className = 'Claim\JWTIDClaim';
-          break;
-
-        case Claim\NotBeforeClaim::NAME:
-          $className = 'Claim\NotBeforeClaim';
-          break;
-
-        case Claim\SubjectClaim::NAME:
-          $className = 'Claim\SubjectClaim';
-          break;
-
-        case Claim\CompanyCodeClaim::NAME:
-          $className = 'Claim\CompanyCodeClaim';
-          break;
-
-        case Claim\EmployeeIDClaim::NAME:
-          $className = 'Claim\EmployeeIDClaim';
-          break;
-      }
-
-    } elseif ($subNamespace == 'Header') {
-
-      switch ($name) {
-        case Header\AlgorithmParameter::NAME:
-          $className = 'Header\AlgorithmParameter';
-          break;
-
-        case Header\TypeParameter::NAME:
-          $className = 'Header\TypeParameter';
-          break;
-      }
-
-    } else {
-      throw new \Exception('JWT sub-namespace not found - Could not resolve class for unknown sub-namespace: ' . $subNamespace);
-    }
-
-    return (empty($className)
-      ? $className
-      : (__NAMESPACE__ . '\\' . $className));
-  }
 }

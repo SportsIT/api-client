@@ -1,22 +1,22 @@
 <?php
-namespace DashApi\Transport\JWT\Claim;
+namespace DashApi\Transport\Token\JWT\Header;
 
 /**
- * Class ClaimSet
+ * Class Header
  *
- * @package \DashApi\Transport\JWT\Claim
+ * @package \DashApi\Transport\Token\JWT\Header
  * @author Tim Turner <tim.turner@sports-it.com>
  */
-class ClaimSet {
+class Header {
 
   /**
-   * ClaimSet constructor.
+   * Header constructor.
    * @param array $array
    */
   public function __construct($array = []) {
     if (is_array($array)) {
-      foreach ($array as $claim => $value) {
-        $this->{$claim} = $value;
+      foreach ($array as $parameter => $value) {
+        $this->{$parameter} = $value;
       }
     }
   }

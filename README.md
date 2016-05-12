@@ -31,9 +31,16 @@ You can then later update DashApi using composer:
 composer.phar update
  ```
 
- ## Without Composer
+ ### Without Composer
 
  Why are you not using composer?
  Download contents of `/src` directory from the repo to a local directory in your project. An example of integration might look like
- ```<?php
- require 'path/to/DashApi/Client/';
+ ```
+<?php
+require 'path/to/DashApi/Client/Client.php';
+
+use DashApi\Client\Client;
+
+$api = new Client('company_code', 'secret_key');
+echo $api->getAccessToken();
+```

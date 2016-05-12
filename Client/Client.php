@@ -3,17 +3,19 @@ namespace DashApi\Client;
 
 use DashApi\Utility\Json;
 
-use Guzzle\Http\Client as GuzzleClient;
-
 use DashApi\Transport\JWT;
 use DashApi\Security\Signature\JSONWebSignature;
+use DashApi\Transport\OAuth2\Token;
+
+use Guzzle\Http\Client as GuzzleClient;
+use Carbon\Carbon;
 
 /**
  * Class Client
  *
  * ### Overview
  *
- * @package SIT\DashApi
+ * @package DashApi\Client
  * @author Tim Turner <tim.turner@sports-it.com>
  */
 final class Client
@@ -225,6 +227,54 @@ final class Client
     }
     
     return $this->token;
+  }
+  
+  /**
+   * @return bool
+   */
+  public function isExpired() {
+    return Carbon::now()->gt($this->getExpireDate());
+  }
+  
+  /**
+   * @return Carbon
+   */
+  public function getExpireDate() {
+    if (empty($this->expireDate)) {
+      $this->expireDate = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT_SECONDS);
+    }
+    return $this->expireDate;
+  }
+  
+  /**
+   * @TODO: Need to account for negative, 'expires in' vs. 'expired for', etc
+   * @return int
+   */
+  public function getExpireDateInSeconds($abs = true) {
+    return Carbon::now()->diffInSeconds($this->getExpireDate(), $abs);
+  }
+  
+  /**
+   * @return string
+   */
+  public function getExpireDateForHumans() {
+    return $this->getExpireDate()->diffForHumans();
+  }
+  
+  /**
+   * @param Carbon|string $expireDate
+   * @return $this
+   */
+  public function setExpireDate($expireDate) {
+    if (is_int($expireDate)) {
+      // DateTime construct will cast to string on init
+      $expireDate = Carbon::createFromTimestamp($expireDate);
+    } elseif (is_string($expireDate)) {
+      $expireDate = Carbon::parse($expireDate);
+    }
+    
+    $this->expireDate = $expireDate;
+    return $this;
   }
   
   /**
