@@ -4,6 +4,7 @@
  * Created on: [5/9/16]
  */
 namespace DashApi\Transport\Token\OAuth2\Bearer;
+use DashApi\Transport\Token\OAuth2\OAuth2Token;
 
 /**
  * Class Bearer
@@ -11,7 +12,7 @@ namespace DashApi\Transport\Token\OAuth2\Bearer;
  * @package SIT\Auth\OAuth2\Token
  * @author Nate Strandberg <nate@sports-it.com>
  */
-class Bearer extends AbstractToken
+class Bearer extends OAuth2Token
 {
   const NAME = 'BEARER';
   /**

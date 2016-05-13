@@ -1,6 +1,8 @@
 <?php
 namespace DashApi\Transport\Token\JWT;
 use DashApi\Transport\Token\AbstractToken;
+use DashApi\Transport\Token\JWT\Attribute\ClaimsSetAttribute;
+use DashApi\Transport\Token\JWT\Attribute\HeaderAttribute;
 
 /**
  * Class JSONWebToken
@@ -88,7 +90,7 @@ class JSONWebToken extends AbstractToken {
       }
     }
      */
-    $this->header = new Attribute\HeaderAttribute($header);
+    $this->setHeaders(new Attribute\HeaderAttribute($header));
   
     /* @deprecated in favor of letting ClaimsSetAttribute manage FQCN resolution
     // Init JWT Claims Set
@@ -99,31 +101,74 @@ class JSONWebToken extends AbstractToken {
       }
     }
      */
-    $this->claims = new Attribute\ClaimsSetAttribute($payload);
+    $this->setClaims(new Attribute\ClaimsSetAttribute($payload));
 
-    $expiration = $this->claims->get('exp', null);
+    $expiration = $this->getClaim('exp');
     $this->setExpireDate(($expiration ? $expiration->value : ''));
-    $this->token = $this->encode($this->header) . '.' . $this->encode($this->claims);
+    $this->token = $this->encode($this->getHeaders()) . '.' . $this->encode($this->getClaims());
   }
-
+  
   /**
    * @param string $name
-   * @param mixed $default
+   *
    * @return mixed
    */
-  public function getClaim($name, $default = null) {
-    return $this->claims->get($name, $default);
+  public function getClaim($name) {
+    return $this->getAttribute('claims')[$name];
   }
-
+  
+  public function setClaim($name, $value) {
+    /** @var ClaimsSetAttribute $claims */
+    $claims = $this->getAttribute('claims');
+    $claims->setClaim($name, $value);
+    $this->setAttribute('claims', $claims);
+  }
+  
+  public function getClaims() {
+    return $this->getAttribute('claims');
+  }
+  
+  public function setClaims($claims) {
+    if ($claims instanceof ClaimsSetAttribute) {
+      $this->setAttribute('claims', $claims);
+    } elseif (is_array($claims)) {
+      $this->setAttribute('claims', new ClaimsSetAttribute($claims));
+    } else {
+      throw new \LogicException(sprintf("Received invalid argument type `%s`, expecting `ClaimsSetAttribute` or `array`.",gettype($claims)));
+    }
+  }
+  
   /**
    * @param string $name
-   * @param mixed $default
+   *
    * @return mixed
    */
-  public function getHeader($name, $default = null) {
-    return $this->header->get($name, $default);
+  public function getHeader($name) {
+    return $this->getAttribute('header')[$name];
   }
-
+  
+  public function setHeader($name, $value) {
+  
+    /** @var HeaderAttribute $headers */
+    $headers = $this->getAttribute('header');
+    $headers->setParameter($name, $value);
+    $this->setAttribute('header', $headers);
+  }
+  
+  public function getHeaders() {
+    return $this->getAttribute('header');
+  }
+  
+  public function setHeaders($headers) {
+    if ($headers instanceof HeaderAttribute) {
+      $this->setAttribute('header', $headers);
+    } elseif (is_array($headers)) {
+      $this->setAttribute('header', new ClaimsSetAttribute($headers));
+    } else {
+      throw new \LogicException(sprintf("Received invalid argument type `%s`, expecting `HeaderAttribute` or `array`.", gettype($headers)));
+    }
+  }
+  
   /**
    * @return bool
    * @see https://tools.ietf.org/html/rfc7519#section-7.2 Validating a JWT
@@ -136,7 +181,7 @@ class JSONWebToken extends AbstractToken {
       throw new \Exception('Expired Token - Token is not currently valid');
       // @TODO: Add in lookup for issuer
 
-    } elseif ($this->claims->iss->value != 'apps.dashplatform.com') {
+    } elseif ($this->getClaim('iss')->value != 'apps.dashplatform.com') {
       throw new \Exception('Unrecognized Issuer - Issuing principle not recognized. DashPlatform is only valid issuer currently.');
     }
     return true;
@@ -159,54 +204,6 @@ class JSONWebToken extends AbstractToken {
    */
   public function __toString() {
     return (string)$this->token;
-  }
-  
-  public function getID() {
-    // TODO: Implement getID() method.
-  }
-  
-  public function getRoles() {
-    // TODO: Implement getRoles() method.
-  }
-  
-  public function getCredentials() {
-    // TODO: Implement getCredentials() method.
-  }
-  
-  public function getClient() {
-    // TODO: Implement getClient() method.
-  }
-  
-  public function setClient() {
-    // TODO: Implement setClient() method.
-  }
-  
-  public function isAuthenticated() {
-    // TODO: Implement isAuthenticated() method.
-  }
-  
-  public function setAuthenticated($isAuthenticated) {
-    // TODO: Implement setAuthenticated() method.
-  }
-  
-  public function getAttributes() {
-    // TODO: Implement getAttributes() method.
-  }
-  
-  public function setAttributes(array $attributes) {
-    // TODO: Implement setAttributes() method.
-  }
-  
-  public function hasAttribute($name) {
-    // TODO: Implement hasAttribute() method.
-  }
-  
-  public function getAttribute($name) {
-    // TODO: Implement getAttribute() method.
-  }
-  
-  public function setAttribute($name, $value) {
-    // TODO: Implement setAttribute() method.
   }
   
   /**

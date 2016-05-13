@@ -19,9 +19,14 @@ abstract class AbstractToken implements TokenInterface {
    * The default number of seconds an access token is valid for.
    */
   const EXPIRE_TIME_DEFAULT_SECONDS = '86400'; // 24hrs
+  
+  /**
+   * @var int $ID Immutable unique token ID.
+   */
+  protected $ID;
 
   /**
-   * @var string
+   * @var string Transport ready object that will survive transfer context.
    */
   protected $token;
 
@@ -30,11 +35,13 @@ abstract class AbstractToken implements TokenInterface {
    */
   protected $expireDate;
   
-  protected $roles = [];
-  
-  protected $authenticated = false;
-  
   protected $attributes = [];
+  
+  public function __toString() {
+    if ($this->token === null) {
+      throw new \LogicException("Expected property `token` to be set, assign default in extending class or in ");
+    }
+  }
   
   public function serialize() {
     return serialize($this);
@@ -43,6 +50,54 @@ abstract class AbstractToken implements TokenInterface {
   public function unserialize($serialized) {
     return unserialize($serialized);
   }
+  
+  public function getID() {
+    if (empty($this->ID)) {
+      throw new \LogicException("Expected non-empty property `ID`, all classes extending AbstractToken must set immutable `ID` on initialization.");
+    }
+    return $this->ID;
+  }
+  
+  public function getAttributes() {
+    return $this->attributes;
+  }
+  
+  public function setAttributes(array $attributes) {
+    
+      foreach ($attributes as $name => $value) {
+        $this->setAttribute($name,$value);
+      }
+  }
+  
+  public function hasAttribute($name) {
+    return array_key_exists($name,$this->attributes);
+  }
+  
+  public function getAttribute($name) {
+    
+    if(!$this->hasAttribute($name)) {
+      throw new \InvalidArgumentException(sprintf('Attribute does not exist for key `%s`.', $name));
+    }
+    
+    return $this->attributes[$name];
+  }
+  
+  public function setAttribute($name, $value) {
+    
+    try {
+      $this->attributes[$name] = $value;
+    } catch ($e) {
+      throw new \OutOfBoundsException(sprintf("Error setting attribute, received key: `%s` and value: `%s`.", $name, $value), null, $e);
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   
   /**
    * @return string
@@ -106,22 +161,6 @@ abstract class AbstractToken implements TokenInterface {
 
     $this->expireDate = $expireDate;
     return $this;
-  }
-
-  /**
-   * Gets this token as an array (used for API resources, etc)
-   *
-   * @return array
-   */
-  public function toArray() {
-    return [
-      'access_token'      => $this->getToken(),
-      'token_type'        => $this->getType(),
-      'expires_in'   => (string)$this->getExpireDateInSeconds(),
-      //'scope'             => $this->getScopeAsString(), // getScopeAsString not implemented?
-      //'state'             => $this->getState() // Unrecognized, client MUST ignore
-      //'expires_friendly'  => $this->getExpireDateForHumans(), // Unrecognized, client MUST ignore
-    ];
   }
 
   /**

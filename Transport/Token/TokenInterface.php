@@ -13,19 +13,19 @@ interface TokenInterface extends \Serializable
   
   public function getID();
   
-  public function getRoles();
+  //public function getRoles();
   
-  public function getCredentials();
+  //public function getCredentials();
   
-  public function getClient();
+  //public function getClient();
   
-  public function setClient();
+  //public function setClient();
   
   //public function getUsername();
   
-  public function isAuthenticated();
+  //public function isAuthenticated();
   
-  public function setAuthenticated($isAuthenticated);
+  //public function setAuthenticated($isAuthenticated);
   
   //public function eraseCredentials();
   
