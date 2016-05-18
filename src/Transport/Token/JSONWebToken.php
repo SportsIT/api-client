@@ -114,7 +114,7 @@ class JSONWebToken extends AbstractToken {
    * @return mixed
    */
   public function getClaim($name) {
-    return $this->getAttribute('claims')[$name];
+    return $this->getAttribute('claims')->getClaim($name);
   }
   
   public function setClaim($name, $value) {
@@ -144,7 +144,7 @@ class JSONWebToken extends AbstractToken {
    * @return mixed
    */
   public function getHeader($name) {
-    return $this->getAttribute('header')[$name];
+    return $this->getAttribute('header')->getParameter($name);
   }
   
   public function setHeader($name, $value) {

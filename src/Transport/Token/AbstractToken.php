@@ -86,18 +86,10 @@ abstract class AbstractToken implements TokenInterface {
     
     try {
       $this->attributes[$name] = $value;
-    } catch ($e) {
+    } catch (\Exception $e) {
       throw new \OutOfBoundsException(sprintf("Error setting attribute, received key: `%s` and value: `%s`.", $name, $value), null, $e);
     }
   }
-  
-  
-  
-  
-  
-  
-  
-  
   
   /**
    * @return string

@@ -49,7 +49,7 @@ class ClaimsSetAttribute extends AbstractAttribute
   }
   
   /**
-   * @param string|AbstractClaim  $claim Name of an AbstractClaim or the Abstract Claim itself
+   * @param string|Claim\AbstractClaim  $claim Name of an AbstractClaim or the Abstract Claim itself
    * @param mixed                 $value A
    *
    * @return $this

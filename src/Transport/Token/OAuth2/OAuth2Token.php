@@ -42,7 +42,7 @@ use DashApi\Transport\Token\AbstractToken;
  * @package DashApi\Transport\OAuth2\Token
  * @author Nate Strandberg <nate@sports-it.com>
  */
-class OAuth2Token extends AbstractToken {
+abstract class OAuth2Token extends AbstractToken {
 
   /**
    * The default number of seconds an access token is valid for.

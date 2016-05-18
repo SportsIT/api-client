@@ -1,6 +1,7 @@
 <?php
 namespace DashApi\Client;
 
+use DashApi\Transport\Token\AbstractToken;
 use DashApi\Utility\Json;
 
 use DashApi\Transport\Token\JWT;
@@ -243,7 +244,7 @@ final class Client
    */
   public function getExpireDate() {
     if (empty($this->expireDate)) {
-      $this->expireDate = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT_SECONDS);
+      $this->expireDate = Carbon::now()->addSeconds(AbstractToken::EXPIRE_TIME_DEFAULT_SECONDS);
     }
     return $this->expireDate;
   }

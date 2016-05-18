@@ -42,7 +42,7 @@ class Json {
    * @param bool $associative When TRUE, returned objects will be converted into associative arrays.
    * @return object|array
    *
-   * @throws BadRequestException If the JSON cannot be decoded.
+   * @throws \LogicException If the JSON cannot be decoded.
    */
   public static function decode($json, $associative = false) {
     $decoded = json_decode($json, $associative);

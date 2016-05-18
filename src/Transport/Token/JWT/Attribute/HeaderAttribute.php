@@ -49,7 +49,7 @@ class HeaderAttribute extends AbstractAttribute
   
   /**
    * @param string|Header\AbstractParameter $parameter Name of an AbstractParameter or the Abstract Parameter itself
-   * @param mixed                $value A
+   * @param mixed                           $value
    *
    * @return $this
    */

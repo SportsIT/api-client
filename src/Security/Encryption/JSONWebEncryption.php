@@ -1,7 +1,7 @@
 <?php
 namespace Security\Encryption;
 
-use DashApi\Transport\JWT\JSONWebToken;
+use DashApi\Transport\Token\JWT\JSONWebToken;
 
 /**
  * Class JSONWebEncryption
@@ -68,8 +68,8 @@ class JSONWebEncryption {
      * @see https://tools.ietf.org/html/rfc7516#section-3.3 Example JWE
      */
     
-    $this->header = json_encode($token->header);
-    $this->ciphertext = $this->encrypt(json_encode($token->claims));
+    $this->header = json_encode($token->getHeaders());
+    $this->ciphertext = $this->encrypt(json_encode($token->getClaims()));
   }
 
   /**

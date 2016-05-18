@@ -55,7 +55,7 @@ class ClaimSet {
       foreach ($attributes as $claimName => $value) {
         if (empty($value)) {
           throw new \RangeException(__CLASS__ . '->' . __FUNCTION__ . ' received argument containing empty element for key `' . $claimName . '`');
-        } elseif if (
+        } elseif (
           // Soft sanity check, we want to limit scope of custom claim classes:
           gettype($value) !== 'object'                        // Element must be an 'object', i.e. a class.
           || !is_subclass_of($value, 'AbstractClaim', false)  // Element must extend AbstractClaim class.
