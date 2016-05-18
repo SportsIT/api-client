@@ -24,7 +24,7 @@
   },
   "autoload": {
     "psr-4": {
-      "DashApi\\Client": "src/Client",
+      "DashApi\\Client\\": "src/Client",
       "DashApi\\": "src/"
     }
   }
