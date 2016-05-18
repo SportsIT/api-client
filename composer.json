@@ -1,25 +1,31 @@
 {
-    "name": "sportsit/api-client",
-    "type": "library",
-    "description": "API Library for interfacing with the DASH API",
-    "keywords": ["dash","dashplatform","sportsit","api","client", "api client"],
-    "homepage": "https://github.com/SportsIT/api-client",
-    "license": "MIT",
-    "authors": [
-      {
-        "name": "Tim Turner",
-        "email": "tim.turner@sports-it.com",
-        "homepage": "https://github.com/ronindesign",
-        "role": "Software Engineer"
-      },
-      {
-        "name": "Nate Strandberg",
-        "email": "nate@sports-it.co",
-        "role": "System Architect"
-      }
-    ],
-    "require": {
-        "guzzlehttp/guzzle": "^6.2",
-        "nesbot/carbon": "^1.21"
+  "name": "sportsit/api-client",
+  "type": "library",
+  "description": "API Library for interfacing with the DASH API",
+  "keywords": ["dash","dashplatform","sportsit","api","client", "api client"],
+  "homepage": "https://github.com/SportsIT/api-client",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Tim Turner",
+      "email": "tim.turner@sports-it.com",
+      "homepage": "https://github.com/ronindesign",
+      "role": "Software Engineer"
+    },
+    {
+      "name": "Nate Strandberg",
+      "email": "nate@sports-it.co",
+      "role": "System Architect"
     }
+  ],
+  "require": {
+      "guzzlehttp/guzzle": "^6.2",
+      "nesbot/carbon": "^1.21"
+  },
+  "autoload": {
+    "psr-4": {
+      "DashApi\\Client": "src/Client",
+      "DashApi\\": "src/"
+    }
+  }
 }
