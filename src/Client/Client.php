@@ -1,10 +1,10 @@
 <?php
 namespace DashApi\Client;
 
-use DashApi\Transport\Token\AbstractToken;
+//use DashApi\Transport\Token\AbstractToken;
 use DashApi\Utility\Json;
 
-use DashApi\Transport\Token\JWT;
+use DashApi\Transport\Token;
 use DashApi\Security\Signature\JSONWebSignature;
 use DashApi\Transport\Token\OAuth2;
 
@@ -63,7 +63,7 @@ final class Client
   protected $claims;
   
   /**
-   * @var \DashApi\Transport\Token\JWT\JSONWebToken
+   * @var \DashApi\Transport\Token\JSONWebToken
    */
   protected $jsonWebToken;
   
@@ -134,7 +134,7 @@ final class Client
         'iss' => $_SERVER['SERVER_NAME'], // client hostname / domain
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
         'cco' => $companyCode, // Private Claim
-        
+        'authorizations' => \SIT_Authority::employeeAuthorityActions($employeeID, 1 /** @todo: Tim Turner -> why is this defaulting to facility ID # 1? */),
         'eid' => ($employeeID === null) // Private Claim
           ? '-1'
           : $employeeID
@@ -174,19 +174,26 @@ final class Client
       try {
         $this->getAuthRequestToken();
       } catch (\Exception $e) {
-        throw new \LogicException('No authorization request token has been created, did you call getAuthRequestToken() first?');
+        throw new \LogicException('Could not build authorization request token. Error: '.$e->getMessage(),null,$e);
       }
     }
-    
+  
     $result = (new GuzzleClient)->post(
-      $this->getTokenCreateUrl(), [
+      $this->getTokenCreateUrl(),
+      [
         'headers' => ['Content-Type' => 'application/json'],
         'body' => $this->getJsonAPIRequestBody(),
-        'verify' => false     // @todo: fix for self-signed cert
+        'verify' => false // @todo: fix for self-signed cert
       ]
     );
-    
-    $responseData = Json::decode($result->getBody());
+    // @todo: add try-catch for \GuzzleHttp\Exception\RequestException
+    //try {
+    //  // GuzzleClient request
+    //} catch (\GuzzleHttp\Exception\RequestException $e ) {
+    //  echo (string) $e->getResponse()->getBody());
+    //}
+  
+    $responseData = Json::decode((string) $result->getBody());
     if (empty($responseData->data[0]->attributes->access_token)) {
       throw new \RuntimeException('Response did not contain valid access token');
     }
@@ -207,7 +214,7 @@ final class Client
     $tokenData->header = $header ?: $this->header;
     $tokenData->payload = $claims ?: $this->claims;
     
-    $this->jsonWebToken = new JWT\JSONWebToken($tokenData);
+    $this->jsonWebToken = new Token\JSONWebToken($tokenData);
     $this->jsonWebSignature = new JSONWebSignature($this->jsonWebToken, $this->secret);
     
     switch (static::REQUEST_TOKEN_TYPE) {
@@ -244,7 +251,7 @@ final class Client
    */
   public function getExpireDate() {
     if (empty($this->expireDate)) {
-      $this->expireDate = Carbon::now()->addSeconds(AbstractToken::EXPIRE_TIME_DEFAULT_SECONDS);
+      $this->expireDate = Carbon::now()->addSeconds(Token\AbstractToken::EXPIRE_TIME_DEFAULT_SECONDS);
     }
     return $this->expireDate;
   }
@@ -287,6 +294,7 @@ final class Client
     if (empty($this->jsonWebSignature)) {
       $this->jsonWebSignature = new JSONWebSignature($this->jsonWebToken, $this->secret);
     }
+    
     return Json::encode(
       [
         'data' => [
@@ -329,7 +337,7 @@ final class Client
     if (empty($this->accessToken)) {
       $this->accessToken = $this->getAccessToken();
     } else {
-      $JWT = new JWT\JSONWebToken($this->accessToken);
+      $JWT = new Token\JSONWebToken($this->accessToken);
       if ($JWT->getExpireDateInSeconds(false) < 0) {
         $this->accessToken = $this->getAccessToken();
       }

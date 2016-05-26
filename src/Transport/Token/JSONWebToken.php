@@ -1,6 +1,10 @@
 <?php
-namespace DashApi\Transport\Token\JWT;
-use DashApi\Transport\Token\AbstractToken;
+namespace DashApi\Transport\Token;
+//use DashApi\Transport\Token\AbstractToken;
+use DashApi\Transport\Token\JWT;
+use DashApi\Transport\Token\JWT\Claim;
+use DashApi\Transport\Token\JWT\Header;
+use DashApi\Transport\Token\JWT\Attribute;
 use DashApi\Transport\Token\JWT\Attribute\ClaimsSetAttribute;
 use DashApi\Transport\Token\JWT\Attribute\HeaderAttribute;
 

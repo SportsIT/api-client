@@ -1,7 +1,7 @@
 <?php
 namespace DashApi\Security\Signature;
 
-use DashApi\Transport\Token\JWT\JSONWebToken;
+use DashApi\Transport\Token\JSONWebToken;
 
 /**
  * Class JSONWebSignature

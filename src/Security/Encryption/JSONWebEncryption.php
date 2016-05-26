@@ -1,7 +1,7 @@
 <?php
 namespace Security\Encryption;
 
-use DashApi\Transport\Token\JWT\JSONWebToken;
+use DashApi\Transport\Token\JSONWebToken;
 
 /**
  * Class JSONWebEncryption
