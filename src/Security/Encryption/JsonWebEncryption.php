@@ -1,87 +1,87 @@
 <?php
-namespace DashApi\Security\Signature;
+namespace Security\Encryption;
 
-use DashApi\Transport\Token\JSONWebToken;
+use DashApi\Transport\Token\JsonWebToken;
 
 /**
- * Class JSONWebSignature
+ * Class JsonWebEncryption
  *
- * @see     https://tools.ietf.org/html/rfc7516 JSON Web Signature
+ * @see https://tools.ietf.org/html/rfc7516 JSON Web Encryption
  *
- * @package SIT\Security\Signature\Json
- * @author  Tim Turner <tim.turner@sports-it.com>
+ * @package SIT\Security\Encryption\Json
+ * @author Tim Turner <tim.turner@sports-it.com>
  */
-class JSONWebSignature {
+class JsonWebEncryption {
   const NAME = 'JSONWEBENCRYPTION';
+
   /**
    * The request header to parse for the token.
    */
-  const HEADER_NAME = 'JSONWebSignature';
+  const HEADER_NAME   = 'JsonWebEncryption';
+
   /**
    * The request query to parse for the token; this is only used if the above header is not set.
    */
-  const QUERY_TOKEN = 'jws';
+  const QUERY_TOKEN   = 'jwe';
   
+  //const HMAC_KEY = 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow';
   /**
-   * @var string $protected BASE64URL(UTF8(JWS Protected Header))
+   * @var string $protected BASE64URL(UTF8(JWE Protected Header))
    * @see https://tools.ietf.org/html/rfc7516#section-4 JOSE Header
    */
-  protected $protected;
+  public $protected;
   /**
-   * @var string $header JWS Unprotected Header
+   * @var string $unprotected JWE Shared Unprotected Header
    */
-  //public $header;
+  public $unprotected;
   /**
-   * @var string $payload BASE64URL(JWS Payload)
+   * @var string $header JWE Per-Recipient Unprotected Header
    */
-  //public $payload;
+  public $header;
   /**
-   * @var string $signature BASE64URL(JWS Signature)
+   * @var string $encrypted_key BASE64URL(JWE Encrypted Key)
    */
-  protected $signature;
-  
-  protected $token;
-  
-  protected $secret;
-  
+  public $encrypted_key;
   /**
-   * @param JSONWebToken $token
-   * @param string $secret Base64(urlsafe) encoded key
+   * @var string $iv BASE64URL(JWE Initialization Vector)
    */
-  public function __construct(JSONWebToken $token, $secret) {
-    $this->secret = $secret;
+  public $iv;
+  /**
+   * @var string $ciphertext BASE64URL(JWE Ciphertext)
+   */
+  public $ciphertext;
+  /**
+   * @var string $tag BASE64URL(JWE Authentication Tag)
+   */
+  public $tag;
+  /**
+   * @var string $aad BASE64URL(JWE AAD)
+   */
+  public $aad;
+
+  /**
+   * @param string $token
+   */
+  public function __construct(JsonWebToken $token) {
     /**
-     * Init JWS following rfc steps
-     *
-     * @see https://tools.ietf.org/html/rfc7515#section-3.3 Example JWS
-     * @see https://tools.ietf.org/html/rfc7515#section-5.1 Message Signature or MAC Computation
+     * Init JWE following rfc steps
+     * @see https://tools.ietf.org/html/rfc7516#section-3.3 Example JWE
      */
-    $this->signature = $this->encode(
-      hash_hmac(
-        'sha256', 
-        $token, 
-        $secret, 
-        true
-      ),
-      false,
-      false
-    );
     
-    $this->token = $token . "." . $this->signature;
+    $this->header = json_encode($token->getHeaders());
+    $this->ciphertext = $this->encrypt(json_encode($token->getClaims()));
   }
-  
+
   /**
-   * @see https://tools.ietf.org/html/rfc7515#section-5.2 Message Signature or MAC Validation
-   * 
-   * @param null $signature
+   * @return bool
    */
-  public function validate($signature = null) {
-    if ($this->getSignature() != $signature) {
-      // UnauthorizedException
-      throw new \Exception("Invalid Token - Token signatures do not match, possible data corruption or tampering");
-    }
+  public function isValid() {
+    /* @TODO: Implement validation based on rfc.
+     * TL;DR: If any decryption step fails, JWE is invalid.
+     * @see https://tools.ietf.org/html/rfc7516#section-5.2 Message Decryption
+     */
   }
-  
+
   /**
    * Gets the token type.
    *
@@ -90,35 +90,32 @@ class JSONWebSignature {
   public function getType() {
     return strtolower(self::NAME);
   }
-  
+
   /**
-   * @return mixed|string
-   */
-  public function getSignature() {
-    return $this->signature;
-  }
-  
-  /**
-   * JWS Compact Serialization
-   *
+   * JWE Compact Serialization
+   * 
    * Returns the token ready to be inserted into an Authorization header.
    *
    * @return string
+   * @see 
    * @link http://php.net/manual/en/language.oop5.magic.php#language.oop5.magic.tostring
    */
   public function __toString() {
     /**
-     * @see  https://tools.ietf.org/html/rfc7515#section-3.1 JWS Compact Serialization Overview
-     */;
-    return $this->token;
+     * @TODO Serialization
+     * @see https://tools.ietf.org/html/rfc7516#section-3.1 JWE Compact Serialization Overview
+     */
+    return 'Serialization not implemented!';
+    //return $this->token;
   }
   
-  /**
-   * @param $string
-   * @param bool $utf8
-   * @param bool $json
-   * @return mixed
-   */
+  private function encrypt($plaintext) {
+    //$ciphertext = false;
+    // @TODO: Implement
+    $ciphertext = $plaintext;
+    return $ciphertext;
+  }
+  
   private function encode($string, $utf8 = true, $json = true) {
     $string = ($json !== true)
       ? $string
@@ -126,7 +123,7 @@ class JSONWebSignature {
     $string = ($utf8 !== true)
       ? $string
       : utf8_encode($string);
-    
+  
     // URL and File safe base64
     // - Translate padding
     // - Replace 62nd character (base64) '+' with '-'
@@ -160,7 +157,7 @@ class JSONWebSignature {
       default:
         throw new \Exception("Invalid base64 string - Could not decode string from base64");
     }
-  
+    
     // URL and File safe base64
     // - Translate padding
     // - Replace 62nd character (base64) '-' with '+'
@@ -183,7 +180,7 @@ class JSONWebSignature {
     $output = ($json !== true)
       ? $output
       : json_encode($output);
-  
+    
     return $output;
   }
 }

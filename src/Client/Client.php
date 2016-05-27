@@ -5,7 +5,7 @@ namespace DashApi\Client;
 use DashApi\Utility\Json;
 
 use DashApi\Transport\Token;
-use DashApi\Security\Signature\JSONWebSignature;
+use DashApi\Security\Signature\JsonWebSignature;
 use DashApi\Transport\Token\OAuth2;
 
 use GuzzleHttp\Client as GuzzleClient;
@@ -63,7 +63,7 @@ final class Client
   protected $claims;
   
   /**
-   * @var \DashApi\Transport\Token\JSONWebToken
+   * @var \DashApi\Transport\Token\JsonWebToken
    */
   protected $jsonWebToken;
   
@@ -214,8 +214,8 @@ final class Client
     $tokenData->header = $header ?: $this->header;
     $tokenData->payload = $claims ?: $this->claims;
     
-    $this->jsonWebToken = new Token\JSONWebToken($tokenData);
-    $this->jsonWebSignature = new JSONWebSignature($this->jsonWebToken, $this->secret);
+    $this->jsonWebToken = new Token\JsonWebToken($tokenData);
+    $this->jsonWebSignature = new JsonWebSignature($this->jsonWebToken, $this->secret);
     
     switch (static::REQUEST_TOKEN_TYPE) {
       case 'JWT':
@@ -292,7 +292,7 @@ final class Client
    */
   protected function getJsonAPIRequestBody() {
     if (empty($this->jsonWebSignature)) {
-      $this->jsonWebSignature = new JSONWebSignature($this->jsonWebToken, $this->secret);
+      $this->jsonWebSignature = new JsonWebSignature($this->jsonWebToken, $this->secret);
     }
     
     return Json::encode(
@@ -337,7 +337,7 @@ final class Client
     if (empty($this->accessToken)) {
       $this->accessToken = $this->getAccessToken();
     } else {
-      $JWT = new Token\JSONWebToken($this->accessToken);
+      $JWT = new Token\JsonWebToken($this->accessToken);
       if ($JWT->getExpireDateInSeconds(false) < 0) {
         $this->accessToken = $this->getAccessToken();
       }

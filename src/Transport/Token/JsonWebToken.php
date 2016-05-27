@@ -9,18 +9,18 @@ use DashApi\Transport\Token\JWT\Attribute\ClaimsSetAttribute;
 use DashApi\Transport\Token\JWT\Attribute\HeaderAttribute;
 
 /**
- * Class JSONWebToken
+ * Class JsonWebToken
  *
  * @package \DashApi\Transport\Token\JWT
  * @author Tim Turner <tim.turner@sports-it.com>
  */
-class JSONWebToken extends AbstractToken {
+class JsonWebToken extends AbstractToken {
   const NAME = 'JSONWEBTOKEN';
 
   /**
    * The request header to parse for the token.
    */
-  const HEADER_NAME   = 'JSONWebToken';
+  const HEADER_NAME   = 'JsonWebToken';
 
   /**
    * The request query to parse for the token; this is only used if the above header is not set.
@@ -64,7 +64,7 @@ class JSONWebToken extends AbstractToken {
     } elseif (is_array($tokenData)) {
 
       if (!isset($tokenData['header']) || !isset($tokenData['payload'])) {
-        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JSONWebToken initialization');
+        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
       } else {
         $header  = $tokenData['header'];
         $payload = $tokenData['payload'];
@@ -73,18 +73,18 @@ class JSONWebToken extends AbstractToken {
     } elseif ($tokenData instanceof \stdClass) {
 
       if (!isset($tokenData->header) || !isset($tokenData->payload)) {
-        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JSONWebToken initialization');
+        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
       } else {
         $header = $tokenData->header;
         $payload = $tokenData->payload;
       }
 
-    } elseif ($tokenData instanceof JSONWebToken) {
+    } elseif ($tokenData instanceof JsonWebToken) {
       $header = $tokenData->header;
       $payload = $tokenData->claims;
 
     } else {
-      throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JSONWebToken initialization');
+      throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JsonWebToken initialization');
     }
     
     /* @deprecated in favor of letting HeaderAttribute manage FQCN resolution
