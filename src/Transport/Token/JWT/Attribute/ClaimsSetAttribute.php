@@ -16,7 +16,7 @@ class ClaimsSetAttribute extends AbstractAttribute
    * @return string
    */
   public function __toString() {
-    return json_encode(get_object_vars($this));
+    return json_encode($this->value);
   }
   
   /**
@@ -147,6 +147,10 @@ class ClaimsSetAttribute extends AbstractAttribute
       
       case Claim\EmployeeIDClaim::NAME:
         $className = 'Claim\EmployeeIDClaim';
+        break;
+  
+      case Claim\AuthorizationClaim::NAME:
+        $className = 'Claim\AuthorizationClaim';
         break;
     }
   
