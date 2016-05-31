@@ -1,8 +1,15 @@
 {
   "name": "sportsit/api-client",
   "type": "library",
-  "description": "API Library for interfacing with the DASH API",
-  "keywords": ["dash","dashplatform","sportsit","api","client", "api client"],
+  "description": "PHP library for interacting with the DASH Platform API",
+  "keywords": [
+    "dash",
+    "dashplatform",
+    "sportsit",
+    "api",
+    "client",
+    "api client"
+  ],
   "homepage": "https://github.com/SportsIT/api-client",
   "license": "MIT",
   "authors": [
@@ -14,8 +21,8 @@
     },
     {
       "name": "Nate Strandberg",
-      "email": "nate@sports-it.co",
-      "role": "System Architect"
+      "email": "nate@sports-it.com",
+      "role": "Systems Architect"
     }
   ],
   "require": {
@@ -24,8 +31,13 @@
   },
   "autoload": {
     "psr-4": {
-      "DashApi\\Client\\": "src/Client",
-      "DashApi\\": "src/"
+      "DashApi\\Client\\": "src/Client/",
+      "DashApi\\": "src/",
+
+      "DashApi\\Tests\\": "tests/"
     }
+  },
+  "require-dev": {
+    "behat/behat": "^3.1"
   }
 }
