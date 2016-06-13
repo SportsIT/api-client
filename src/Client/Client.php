@@ -1,17 +1,17 @@
 <?php
 namespace DashApi\Client;
 
-//use DashApi\Transport\Token\AbstractToken;
-use DashApi\Utility\Json;
-
-use DashApi\Transport\Token;
-use DashApi\Security\Signature\JsonWebSignature;
-use DashApi\Transport\Token\OAuth2;
+use Carbon\Carbon;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Carbon\Carbon;
-use Psr\Http\Message\ResponseInterface;
+
+use DashApi\Utility\Json;
+use DashApi\Transport\Token;
+use DashApi\Transport\Token\OAuth2;
+use DashApi\Security\Signature\JsonWebSignature;
+
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class Client
@@ -21,8 +21,8 @@ use Psr\Http\Message\StreamInterface;
  * @package DashApi\Client
  * @author Tim Turner <tim.turner@sports-it.com>
  */
-final class Client
-{
+final class Client {
+
   const REQUEST_SCHEMA = 'https';
   const REQUEST_HOST = 'apps.dashplatform.com';
   const REQUEST_PATH_SEG_API = '/dash/api';
@@ -40,6 +40,11 @@ final class Client
    * @var string
    */
   protected $secret;
+
+  /**
+   * @var Carbon|string|null
+   */
+  protected $expireDate;
   
   /**
    * @var string
@@ -47,8 +52,10 @@ final class Client
   protected $employeeID;
   
   /**
-   * @var null Set on initialization to incoming $apiUrl if passed.
-   *           Otherwise, set to: static::REQUEST_SCHEMA . '://' . static::REQUEST_HOST . static::REQUEST_PATH_SEG_API;
+   * Set on initialization to incoming $apiUrl if passed.
+   * Otherwise, set to: static::REQUEST_SCHEMA . '://' . static::REQUEST_HOST . static::REQUEST_PATH_SEG_API;
+   *
+   * @var string|null
    */
   protected $apiUrl;
   
@@ -86,6 +93,13 @@ final class Client
    * @var string
    */
   protected $authTokenType = 'bearer';
+
+  /**
+   * Used to control how much information is exposed via exceptions & messages.
+   *
+   * @var bool
+   */
+  protected $debugMode = false;
   
   /**
    * Client constructor.
@@ -177,7 +191,6 @@ final class Client
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
         'cco' => $companyCode, // Private Claim
         //'authorizations' => \SIT_Authority::employeeAuthorityActions($this->employeeID, 1),
-        
       ];
   
       if ($this->employeeID) {
@@ -198,6 +211,29 @@ final class Client
       } 
     }
   }
+
+  /**
+   * Enables/disables debug mode.
+   *
+   * Warning: When debug mode is enabled, exceptions may contain potentially
+   * sensitive information!
+   *
+   * @param bool $mode Whether or not to enable debug mode.
+   * @return $this
+   */
+  public function setDebugMode($mode = true) {
+    $this->debugMode = filter_var($mode, FILTER_VALIDATE_BOOLEAN);
+    return $this;
+  }
+
+  /**
+   * Checks whether or not debug mode is enabled.
+   *
+   * @return bool Returns true if debug mode is enabled, false otherwise.
+   */
+  public function isDebugMode() {
+    return $this->debugMode;
+  }
   
   /**
    * @param string $resourcePath
@@ -210,9 +246,11 @@ final class Client
     $result = (new GuzzleClient)->get(
       $this->apiUrl . $resourcePath, [
         'headers' => [
-          'Content-Type' => 'application/json',
+          'Content-Type'  => 'application/json',
           'Authorization' => ucfirst($this->authTokenType) . ' ' . $this->accessToken
-        ]
+        ],
+        'verify'      => false, // @todo: fix for self-signed cert
+        'http_errors' => false  // Set to false to disable throwing exceptions on an HTTP protocol errors
       ]
     );
     
@@ -220,7 +258,9 @@ final class Client
   }
   
   /**
-   * @return mixed
+   * Gets an access token from the API server.
+   *
+   * @return string
    *
    * @throws \LogicException Error when getting a request token
    * @throws \RuntimeException Response did not contain valid access token.
@@ -231,16 +271,17 @@ final class Client
       try {
         $this->getAuthRequestToken();
       } catch (\Exception $e) {
-        throw new \LogicException('Could not build authorization request token. Error: '.$e->getMessage(),null,$e);
+        throw new \LogicException('Could not build authorization request token. Error: ' . $e->getMessage(), null, $e);
       }
     }
   
     $result = (new GuzzleClient)->post(
       $this->getTokenCreateUrl(),
       [
-        'headers' => ['Content-Type' => 'application/json'],
-        'body' => $this->getJsonAPIRequestBody(),
-        'verify' => false // @todo: fix for self-signed cert
+        'headers'     => ['Content-Type' => 'application/json'],
+        'body'        => $this->getJsonAPIRequestBody(),
+        'verify'      => false, // @todo: fix for self-signed cert
+        'http_errors' => false  // Set to false to disable throwing exceptions on an HTTP protocol errors
       ]
     );
     // @todo: add try-catch for \GuzzleHttp\Exception\RequestException
@@ -249,10 +290,27 @@ final class Client
     //} catch (\GuzzleHttp\Exception\RequestException $e ) {
     //  echo (string) $e->getResponse()->getBody());
     //}
-  
-    $responseData = Json::decode((string) $result->getBody());
+
+    try {
+      $responseData = Json::decode((string)$result->getBody());
+    } catch (\RuntimeException $e) {
+      $message = 'Unable to decode server response as JSON';
+
+      // Add the response body to the exception if we're debugging..
+      if ($this->debugMode) {
+        $message .= "\r\n" . print_r((string)$result->getBody(), true);
+      }
+      throw new \RuntimeException($message, null, $e);
+    }
+
     if (empty($responseData->data[0]->attributes->access_token)) {
-      throw new \RuntimeException('Response did not contain valid access token');
+      $message = 'Response did not contain valid access token';
+
+      // Add the response data to the exception if we're debugging..
+      if ($this->debugMode) {
+        $message .= "\r\n" . print_r($responseData, true);
+      }
+      throw new \RuntimeException($message);
     }
     
     $this->accessToken = $responseData->data[0]->attributes->access_token;
@@ -260,10 +318,12 @@ final class Client
   }
   
   /**
-   * @param null $header
-   * @param null $claims
+   * @param array|string|null $header
+   * @param array|string|null $claims
    * @return string
-   * @throws \Exception
+   *
+   * @throws \LogicException
+   * @throws \RuntimeException
    */
   public function getAuthRequestToken($header = null, $claims = null) {
     $tokenData = new \stdClass();
@@ -285,11 +345,11 @@ final class Client
       
       case 'JWE':
         // @TODO: Not implemented yet!
-        throw new \Exception('JSON Web Encryption token requests have not been implemented yet, please reset static::REQUEST_TOKEN_TYPE');
+        throw new \LogicException('JSON Web Encryption token requests have not been implemented yet, please reset static::REQUEST_TOKEN_TYPE');
         break;
       
       default:
-        throw new \Exception('Invalid Request Token Type - REQUEST_TOKEN_TYPE must be set to a valid type');
+        throw new \RuntimeException('Invalid Request Token Type - REQUEST_TOKEN_TYPE must be set to a valid type');
         break;
     }
     
@@ -297,6 +357,8 @@ final class Client
   }
   
   /**
+   * Checks whether or not the access token is expired.
+   *
    * @return bool
    */
   public function isExpired() {
@@ -315,6 +377,8 @@ final class Client
   
   /**
    * @TODO: Need to account for negative, 'expires in' vs. 'expired for', etc
+   *
+   * @param bool $abs
    * @return int
    */
   public function getExpireDateInSeconds($abs = true) {
@@ -351,19 +415,17 @@ final class Client
     if (empty($this->jsonWebSignature)) {
       $this->jsonWebSignature = new JsonWebSignature($this->jsonWebToken, $this->secret);
     }
-    $encoded = Json::encode(
-      [
-        'data' => [
-          'type' => static::REQUEST_TYPE,
-          'id' => 1,
-          'attributes' => [
-            'header' => $this->header,
-            'claims' => $this->claims,
-            'signature' => $this->jsonWebSignature->getSignature()
-          ]
+    return Json::encode([
+      'data' => [
+        'type'  => static::REQUEST_TYPE,
+        'id'    => 1,
+        'attributes'  => [
+          'header'    => $this->header,
+          'claims'    => $this->claims,
+          'signature' => $this->jsonWebSignature->getSignature()
         ]
-      ]);
-    return $encoded;
+      ]
+    ]);
   }
   
   /**
@@ -389,15 +451,20 @@ final class Client
   
   /**
    * Check if valid access token is set and get one if not.
+   *
+   * @return $this
    */
   protected function validateAccessToken() {
     if (empty($this->accessToken)) {
       $this->accessToken = $this->getAccessToken();
     } else {
+
       $JWT = new Token\JsonWebToken($this->accessToken);
       if ($JWT->getExpireDateInSeconds(false) < 0) {
         $this->accessToken = $this->getAccessToken();
       }
     }
+
+    return $this;
   }
 }

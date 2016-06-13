@@ -4,27 +4,78 @@ namespace DashApi\Utility;
 /**
  * Class Json
  *
- * @package SIT\Utility
- * @author Nate Strandberg <nate@sports-it.com>
+ * ### Overview
+ * This class provides JSON encoding/decoding with simple error handling.
+ *
+ * @package DashApi\Utility
+ * @author Nate Strandberg <nate@dashplatform.com>
  */
-class Json {
-  
+final class Json {
+
   /**
-   * @param mixed $data
-   * @param int $flags Bitmask consisting of:
-   *  - JSON_HEX_QUOT
-   *  - JSON_HEX_TAG
-   *  - JSON_HEX_AMP
-   *  - JSON_HEX_APOS
-   *  - JSON_NUMERIC_CHECK
-   *  - JSON_PRETTY_PRINT
-   *  - JSON_UNESCAPED_SLASHES
-   *  - JSON_FORCE_OBJECT
-   *  - JSON_UNESCAPED_UNICODE
-   * @return string
+   * Can't touch this.
+   *
    */
-  public static function encode($data, $flags = null) {
-    $encoded = json_encode($data, $flags);
+  private function __construct() {
+  }
+
+  /**
+   * Can't touch this.
+   *
+   */
+  private function __clone() {
+  }
+
+  /**
+   * Returns the JSON representation of a value.
+   *
+   * @param mixed $value The data to encode.
+   * @param int $options Bitmask consisting of:
+   *  - `JSON_HEX_QUOT`
+   *    All " are converted to \u0022.
+   *
+   *  - `JSON_HEX_TAG`
+   *    All < and > are converted to \u003C and \u003E.
+   *
+   *  - `JSON_HEX_AMP`
+   *    All &s are converted to \u0026.
+   *
+   *  - `JSON_HEX_APOS`
+   *    All ' are converted to \u0027.
+   *
+   *  - `JSON_NUMERIC_CHECK`
+   *    Encodes numeric strings as numbers.
+   *
+   *  - `JSON_PRETTY_PRINT`
+   *    Use whitespace in returned data to format it.
+   *
+   *  - `JSON_UNESCAPED_SLASHES`
+   *    Don't escape /.
+   *
+   *  - `JSON_FORCE_OBJECT`
+   *    Outputs an object rather than an array when a non-associative array is used.
+   *    Especially useful when the recipient of the output is expecting an object
+   *    and the array is empty.
+   *
+   *  - `JSON_UNESCAPED_UNICODE`
+   *    Encode multibyte Unicode characters literally (default is to escape as \uXXXX).
+   *
+   *  - `JSON_BIGINT_AS_STRING`
+   *    Encodes large integers as their original string value.
+   *
+   *  - `JSON_PARTIAL_OUTPUT_ON_ERROR`
+   *    Substitute some unencodable values instead of failing.
+   *
+   *  - `JSON_PRESERVE_ZERO_FRACTION`
+   *    Ensures that float values are always encoded as a float value.
+   *
+   * @param int $depth The maximum depth. Must be greater than zero.
+   * @return string Returns a JSON encoded string.
+   *
+   * @throws \RuntimeException If the JSON cannot be encoded.
+   */
+  public static function encode($value, $options = 0, $depth = 512) {
+    $encoded = json_encode($value, $options, $depth);
 
     // Handle any JSON encoding errors..
     $error = json_last_error();
@@ -40,12 +91,15 @@ class Json {
    *
    * @param string $json The json string being decoded.
    * @param bool $associative When TRUE, returned objects will be converted into associative arrays.
+   * @param int $depth User specified recursion depth.
+   * @param int $options Bitmask consisting of:
+   *  - `JSON_BIGINT_AS_STRING`
    * @return object|array
    *
-   * @throws \LogicException If the JSON cannot be decoded.
+   * @throws \RuntimeException If the JSON cannot be decoded.
    */
-  public static function decode($json, $associative = false) {
-    $decoded = json_decode($json, $associative);
+  public static function decode($json, $associative = false, $depth = 512, $options = 0) {
+    $decoded = json_decode($json, $associative, $depth, $options);
 
     // Handle any JSON decoding errors..
     $error = json_last_error();
@@ -57,7 +111,11 @@ class Json {
   }
 
   /**
-   * @param int $error
+   * Handles JSON encoding/decoding errors.
+   *
+   * @param int $error The JSON error code.
+   *
+   * @throws \RuntimeException With error description.
    */
   protected static function handleDecodeError($error) {
 
@@ -99,6 +157,6 @@ class Json {
         break;
     }
 
-    throw new \LogicException(sprintf('Unable to process JSON: %s', $reason));
+    throw new \RuntimeException(sprintf('Unable to process JSON: %s', $reason));
   }
 }
