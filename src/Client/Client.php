@@ -92,18 +92,61 @@ final class Client
    *
    * @param string $companyCode
    * @param string $secret
-   * @param string|null $employeeID
+   * @param array|null $authorization Array matching one of the following:
+   *                                  Employee Auth: ['employee' => (int)]
+   *                                  Customer Auth: ['customer' => (int)]
+   *                                  Scope Auth:    ['scope' => (string) CSV api resource dotpaths]
+   *                                  SIT Auths:     ['auth' => (string) CSV api resource dotpaths]
    * @param string|null $apiUrl
    * @param string|null $header
    * @param array|null $claims
+   * 
+   * Examples:
+   * 
+   * $api = new \DashApi\Client\Client('companycode1', 'companysecretAPIkey', ['employeeID' => 1337, 'scope' => 'products.read,events.read']);
+   * 
    */
-  public function __construct($companyCode, $secret, $employeeID = null, $apiUrl = null, $header = null, $claims = null) {
+  public function __construct($companyCode, $secret, $authorization = null, $apiUrl = null, $header = null, $claims = null) {
     $this->companyCode = $companyCode;
     //$this->secret = pack('H*', $secret);
     $this->secret = $secret;
+    // @todo: add support of faclityID, depend on employeeID
+  
+    if ($authorization['employee'] !== null) {
+      if (is_numeric($authorization['employee'])) {
+        $this->employeeID = $authorization['employee'];
+        //$authorizations = \SIT_Authority::employeeAuthorityActions($authorization['employee'], 1);
+      } else {
+        throw new \RuntimeException(sprintf("Invalid format for authorization.employee parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['employee'], true)));
+      }
+    }
     
-    if ($employeeID !== null) {
-      $this->employeeID = $employeeID;
+    if ($authorization['customer'] !== null) {
+      if (is_numeric($authorization['customer'])) {
+        $this->customerID = (int) $authorization['customer'];
+      } else {
+        throw new \RuntimeException(sprintf("Invalid format for authorization.customer parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['customer'], true)));
+      }
+    }
+  
+    if ($authorization['scope'] !== null) {
+      if (is_string($authorization['scope'])) {
+        $this->scope = explode(',', $authorization['scope']);
+      } elseif (is_array($authorization['scope'])) {
+        $this->scope = $authorization['scope'];
+      } else {
+        throw new \RuntimeException(sprintf("Invalid format for authorization.scope parameter. Expected (string) csv or (array) of dot paths, got: %s", print_r($authorization['scope'], true)));
+      }
+    }
+  
+    if ($authorization['auth'] !== null) {
+      if (is_string($authorization['auth'])) {
+        $this->auth = explode(',', $authorization['auth']);
+      } elseif (is_array($authorization['auth'])) {
+        $this->auth = $authorization['auth'];
+      } else {
+        throw new \RuntimeException(sprintf("Invalid format for authorization.auth parameter. Expected (string) csv or (array) of SIT Authorizations, got: %s", print_r($authorization['auth'], true)));
+      }
     }
     
     // Resolve URL used to access Dash API
@@ -130,15 +173,29 @@ final class Client
       $this->claims = [
         'iat' => time(),
         'jti' => base64_encode(mcrypt_create_iv(32)),
-        
         'iss' => $_SERVER['SERVER_NAME'], // client hostname / domain
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
         'cco' => $companyCode, // Private Claim
-        'authorizations' => \SIT_Authority::employeeAuthorityActions($employeeID, 1 /** @todo: Tim Turner -> why is this defaulting to facility ID # 1? */),
-        'eid' => ($employeeID === null) // Private Claim
-          ? '-1'
-          : $employeeID
+        //'authorizations' => \SIT_Authority::employeeAuthorityActions($this->employeeID, 1),
+        
       ];
+  
+      if ($this->employeeID) {
+        $this->claims['eid'] = $this->employeeID; // Private Claim
+      }
+  
+      if ($this->customerID) {
+        $this->claims['cid'] = $this->customerID; // Private Claim
+      }
+  
+      if ($this->scope) {
+        $this->claims['scope'] = $this->scope; // Private Claim
+      }
+      
+      if ($this->auth) {
+        // @todo: rename claim 'authorizations' -> 'auth'
+        $this->claims['authorizations'] = $this->auth; // Private Claim
+      } 
     }
   }
   
@@ -294,8 +351,7 @@ final class Client
     if (empty($this->jsonWebSignature)) {
       $this->jsonWebSignature = new JsonWebSignature($this->jsonWebToken, $this->secret);
     }
-    
-    return Json::encode(
+    $encoded = Json::encode(
       [
         'data' => [
           'type' => static::REQUEST_TYPE,
@@ -307,6 +363,7 @@ final class Client
           ]
         ]
       ]);
+    return $encoded;
   }
   
   /**
