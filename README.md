@@ -41,6 +41,6 @@ require 'path/to/DashApi/Client/Client.php';
 
 use DashApi\Client\Client;
 
-$api = new Client('company_code', 'secret_key');
+$api = new Client('company_code', 'secret_key', ['scope' => 'products.read,events.read']);
 echo $api->getAccessToken();
 ```

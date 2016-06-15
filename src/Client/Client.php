@@ -104,13 +104,13 @@ final class Client {
   /**
    * Client constructor.
    *
-   * @param string $companyCode
-   * @param string $secret
+   * @param string $companyCode       This is the same company code used to login to DASH Platform
+   * @param string $secret            API Secret key found in DASH Platform: Settings > Company > API (tab)
    * @param array|null $authorization Array matching one of the following:
    *                                  Employee Auth: ['employee' => (int)]
    *                                  Customer Auth: ['customer' => (int)]
    *                                  Scope Auth:    ['scope' => (string) CSV api resource dotpaths]
-   *                                  SIT Auths:     ['auth' => (string) CSV api resource dotpaths]
+   *                                  SIT Auths:     ['auth' => (string) CSV SIT_Authorization flags]
    * @param string|null $apiUrl
    * @param string|null $header
    * @param array|null $claims
@@ -129,7 +129,6 @@ final class Client {
     if ($authorization['employee'] !== null) {
       if (is_numeric($authorization['employee'])) {
         $this->employeeID = $authorization['employee'];
-        //$authorizations = \SIT_Authority::employeeAuthorityActions($authorization['employee'], 1);
       } else {
         throw new \RuntimeException(sprintf("Invalid format for authorization.employee parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['employee'], true)));
       }
@@ -190,7 +189,6 @@ final class Client {
         'iss' => $_SERVER['SERVER_NAME'], // client hostname / domain
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
         'cco' => $companyCode, // Private Claim
-        //'authorizations' => \SIT_Authority::employeeAuthorityActions($this->employeeID, 1),
       ];
   
       if ($this->employeeID) {
@@ -284,12 +282,6 @@ final class Client {
         'http_errors' => false  // Set to false to disable throwing exceptions on an HTTP protocol errors
       ]
     );
-    // @todo: add try-catch for \GuzzleHttp\Exception\RequestException
-    //try {
-    //  // GuzzleClient request
-    //} catch (\GuzzleHttp\Exception\RequestException $e ) {
-    //  echo (string) $e->getResponse()->getBody());
-    //}
 
     try {
       $responseData = Json::decode((string)$result->getBody());
