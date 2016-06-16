@@ -49,7 +49,17 @@ class JsonWebSignature {
    * @param string       $secret Base64(urlsafe) encoded key
    */
   public function __construct(JsonWebToken $token, $secret) {
-    $this->secret = $secret;
+    if (ctype_xdigit($secret) === false) {
+      throw new \LogicException(
+        sprintf(
+          "Expected `secret` parameter to be hexadecimal string, unable to parse given value: `%s`",
+          $secret
+        )
+      );
+    } else {
+      $this->secret = pack('H*', $secret);
+    }
+    
     /**
      * Init JWS following rfc steps
      *
@@ -60,7 +70,7 @@ class JsonWebSignature {
       hash_hmac(
         'sha256', 
         $token, 
-        $secret, 
+        $this->secret, 
         true
       ),
       false,
