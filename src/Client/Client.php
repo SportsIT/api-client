@@ -47,9 +47,19 @@ final class Client {
   protected $expireDate;
   
   /**
-   * @var string
+   * @var string|int
    */
   protected $employeeID;
+  
+  /**
+   * @var string|int
+   */
+  protected $customerID;
+  
+  /**
+   * @var string|int
+   */
+  protected $facilityID;
   
   /**
    * Set on initialization to incoming $apiUrl if passed.
@@ -109,8 +119,9 @@ final class Client {
    * @param array|null $authorization Array matching one of the following:
    *                                  Employee Auth: ['employee' => (int)]
    *                                  Customer Auth: ['customer' => (int)]
+   *                                  Facility Auth: ['facility' => (int)]
    *                                  Scope Auth:    ['scope' => (string) CSV api resource dotpaths]
-   *                                  SIT Auths:     ['auth' => (string) CSV SIT_Authorization flags]
+   *                                  SIT Auth:     ['auth' => (string) CSV SIT_Authorization flags]
    * @param string|null $apiUrl
    * @param string|null $header
    * @param array|null $claims
@@ -136,9 +147,22 @@ final class Client {
     
     if ($authorization['customer'] !== null) {
       if (is_numeric($authorization['customer'])) {
-        $this->customerID = (int) $authorization['customer'];
+        $this->customerID = $authorization['customer'];
       } else {
         throw new \RuntimeException(sprintf("Invalid format for authorization.customer parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['customer'], true)));
+      }
+    }
+    
+    if ($authorization['facility'] !== null) {
+      if (is_numeric($authorization['facility'])) {
+        $this->facilityID = $authorization['facility'];
+      } else {
+        throw new \RuntimeException(
+          sprintf(
+            "Invalid format for authorization.facility parameter. Expected (int) or (string) numeric, got: %s",
+            print_r($authorization['facility'], true)
+          )
+        );
       }
     }
   
@@ -197,6 +221,10 @@ final class Client {
   
       if ($this->customerID) {
         $this->claims['cid'] = $this->customerID; // Private Claim
+      }
+  
+      if ($this->facilityID) {
+        $this->claims['fid'] = $this->facilityID; // Private Claim
       }
   
       if ($this->scope) {
