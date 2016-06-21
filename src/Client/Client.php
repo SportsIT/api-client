@@ -115,6 +115,7 @@ final class Client {
    * Client constructor.
    *
    * @param string $companyCode       This is the same company code used to login to DASH Platform
+   * @param int $facilityID    Database ID for facility
    * @param string $secret            API Secret key found in DASH Platform: Settings > Company > API (tab)
    * @param array|null $authorization Array matching one of the following:
    *                                  Employee Auth: ['employee' => (int)]
@@ -128,15 +129,14 @@ final class Client {
    * 
    * Examples:
    * 
-   * $api = new \DashApi\Client\Client('companycode1', 'companysecretAPIkey', ['employeeID' => 1337, 'scope' => 'products.read,events.read']);
+   * $api = new \DashApi\Client\Client('mycompanycode', 123, 'companysecretAPIkey', ['employee' => 1337, 'scope' => 'products.read,events.read']);
    * 
    */
-  public function __construct($companyCode, $secret, $authorization = null, $apiUrl = null, $header = null, $claims = null) {
+  public function __construct($companyCode, $facilityID, $secret, $authorization = null, $apiUrl = null, $header = null, $claims = null) {
     $this->companyCode = $companyCode;
-    //$this->secret = pack('H*', $secret);
+    $this->facilityID = $facilityID;
     $this->secret = $secret;
-    // @todo: add support of faclityID, depend on employeeID
-  
+    
     if ($authorization['employee'] !== null) {
       if (is_numeric($authorization['employee'])) {
         $this->employeeID = $authorization['employee'];
@@ -150,19 +150,6 @@ final class Client {
         $this->customerID = $authorization['customer'];
       } else {
         throw new \RuntimeException(sprintf("Invalid format for authorization.customer parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['customer'], true)));
-      }
-    }
-    
-    if ($authorization['facility'] !== null) {
-      if (is_numeric($authorization['facility'])) {
-        $this->facilityID = $authorization['facility'];
-      } else {
-        throw new \RuntimeException(
-          sprintf(
-            "Invalid format for authorization.facility parameter. Expected (int) or (string) numeric, got: %s",
-            print_r($authorization['facility'], true)
-          )
-        );
       }
     }
   
@@ -212,7 +199,8 @@ final class Client {
         'jti' => base64_encode(mcrypt_create_iv(32)),
         'iss' => $_SERVER['SERVER_NAME'], // client hostname / domain
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
-        'cco' => $companyCode, // Private Claim
+        'cco' => $this->companyCode, // Private Claim
+        'fid' => $this->facilityID, // Private Claim
       ];
   
       if ($this->employeeID) {
@@ -221,10 +209,6 @@ final class Client {
   
       if ($this->customerID) {
         $this->claims['cid'] = $this->customerID; // Private Claim
-      }
-  
-      if ($this->facilityID) {
-        $this->claims['fid'] = $this->facilityID; // Private Claim
       }
   
       if ($this->scope) {
