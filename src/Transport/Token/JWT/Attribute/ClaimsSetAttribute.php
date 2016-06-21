@@ -144,6 +144,10 @@ class ClaimsSetAttribute extends AbstractAttribute
       case Claim\CompanyCodeClaim::NAME:
         $className = 'Claim\CompanyCodeClaim';
         break;
+  
+      case Claim\FacilityIDClaim::NAME:
+        $className = 'Claim\FacilityIDClaim';
+        break;
       
       case Claim\EmployeeIDClaim::NAME:
         $className = 'Claim\EmployeeIDClaim';
