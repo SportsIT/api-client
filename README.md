@@ -44,3 +44,4 @@ use DashApi\Client\Client;
 $api = new Client('company_code', 1, 'secret_key', ['scope' => 'products.read,events.read']);
 echo $api->getAccessToken();
 ```
+
