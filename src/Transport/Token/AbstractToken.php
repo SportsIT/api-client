@@ -18,7 +18,7 @@ abstract class AbstractToken implements TokenInterface {
   /**
    * The default number of seconds an access token is valid for.
    */
-  const EXPIRE_TIME_DEFAULT_SECONDS = '86400'; // 24hrs
+  const EXPIRE_TIME_DEFAULT = '86400'; // 24hrs
   
   /**
    * @var int $ID Immutable unique token ID.
@@ -33,7 +33,7 @@ abstract class AbstractToken implements TokenInterface {
   /**
    * @var Carbon
    */
-  protected $expireDate;
+  protected $expireTime;
   
   protected $attributes = [];
   
@@ -111,47 +111,47 @@ abstract class AbstractToken implements TokenInterface {
    * @return bool
    */
   public function isExpired() {
-    return Carbon::now()->gt($this->getExpireDate());
+    return Carbon::now()->gt($this->getExpireTime());
   }
 
   /**
    * @return Carbon
    */
-  public function getExpireDate() {
-    if (empty($this->expireDate)) {
-      $this->expireDate = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT_SECONDS);
+  public function getExpireTime() {
+    if (empty($this->expireTime)) {
+      $this->expireTime = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT);
     }
-    return $this->expireDate;
+    return $this->expireTime;
   }
 
   /**
    * @TODO: Need to account for negative, 'expires in' vs. 'expired for', etc
    * @return int
    */
-  public function getExpireDateInSeconds($abs = true) {
-    return Carbon::now()->diffInSeconds($this->getExpireDate(), $abs);
+  public function getExpireTimeInSeconds($abs = true) {
+    return Carbon::now()->diffInSeconds($this->getExpireTime(), $abs);
   }
 
   /**
    * @return string
    */
-  public function getExpireDateForHumans() {
-    return $this->getExpireDate()->diffForHumans();
+  public function getExpireTimeForHumans() {
+    return $this->getExpireTime()->diffForHumans();
   }
 
   /**
-   * @param Carbon|string $expireDate
+   * @param Carbon|string $expireTime
    * @return $this
    */
-  public function setExpireDate($expireDate) {
-    if (is_int($expireDate)) {
+  public function setExpireTime($expireTime) {
+    if (is_int($expireTime)) {
       // DateTime construct will cast to string on init
-      $expireDate = Carbon::createFromTimestamp($expireDate);
-    } elseif (is_string($expireDate)) {
-      $expireDate = Carbon::parse($expireDate);
+      $expireTime = Carbon::createFromTimestamp($expireTime);
+    } elseif (is_string($expireTime)) {
+      $expireTime = Carbon::parse($expireTime);
     }
 
-    $this->expireDate = $expireDate;
+    $this->expireTime = $expireTime;
     return $this;
   }
 

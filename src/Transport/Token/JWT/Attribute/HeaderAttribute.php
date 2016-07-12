@@ -82,6 +82,10 @@ class HeaderAttribute extends AbstractAttribute
     return $this;
   }
   
+  public function toArray() {
+    return $this->value;
+  }
+  
   protected function validateParameter($parameterName, &$parameter) {
     if (empty($parameter)) {
       

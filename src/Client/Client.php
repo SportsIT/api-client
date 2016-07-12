@@ -8,6 +8,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use DashApi\Utility\Json;
 use DashApi\Transport\Token;
 use DashApi\Transport\Token\OAuth2;
+use DashApi\Client\Request;
 use DashApi\Security\Signature\JsonWebSignature;
 
 use Psr\Http\Message\StreamInterface;
@@ -77,7 +78,7 @@ final class Client {
   protected $customerID;
   
   /**
-   * 
+   * Database facility ID to get requested data for.
    * 
    * @var string|int
    */
@@ -92,14 +93,16 @@ final class Client {
   protected $apiUrl;
   
   /**
+   * @var object 
+   * 
    * @var string
    */
-  protected $header;
+  protected $defaultTokenRequest;
   
   /**
    * @var string
    */
-  protected $claims;
+  protected $defaultRequestClaims;
   
   /**
    * @var \DashApi\Transport\Token\JsonWebToken
@@ -358,11 +361,26 @@ final class Client {
       }
     }
   
+    if (empty($this->jsonWebSignature)) {
+      $this->jsonWebSignature = new JsonWebSignature(
+        $this->jsonWebToken,
+        $this->secret
+      );
+    }
+  
+    $authCode = new OAuth2\AuthorizationCode($this->jsonWebToken, $this->secret);
+    $tokenRequest = new Request\OAuth2\Token($authCode);
+    //$tokenRequest = new Request\OAuth2\Token(
+    //  $this->header,
+    //  $this->claims,
+    //  $this->jsonWebSignature->getSignature()
+    //);
+    
     $result = (new GuzzleClient)->post(
       $this->getTokenCreateUrl(),
       [
-        'headers'     => ['Content-Type' => 'application/json'],
-        'body'        => $this->getJsonAPIRequestBody(),
+        'headers'     => $tokenRequest->getHeader(),
+        'body'        => (string) $tokenRequest,
         'verify'      => false, // @todo: fix for self-signed cert
         'http_errors' => false  // Set to false to disable throwing exceptions on HTTP protocol errors
       ]
@@ -383,7 +401,7 @@ final class Client {
     if (empty($responseData->data[0]->attributes->access_token)) {
       $message = 'Response did not contain valid access token';
 
-      // Add the response data to the exception if we're debugging..
+      // Add the response data to the exception if we're debugging...
       if ($this->debugMode) {
         $message .= "\r\n" . print_r($responseData, true);
       }
@@ -453,7 +471,7 @@ final class Client {
    */
   public function getExpireDate() {
     if (empty($this->expireDatetime)) {
-      $this->expireDatetime = Carbon::now()->addSeconds(Token\AbstractToken::EXPIRE_TIME_DEFAULT_SECONDS);
+      $this->expireDatetime = Carbon::now()->addSeconds(Token\AbstractToken::EXPIRE_TIME_DEFAULT);
     }
     return $this->expireDatetime;
   }
@@ -514,6 +532,8 @@ final class Client {
     if (empty($this->jsonWebSignature)) {
       $this->jsonWebSignature = new JsonWebSignature($this->jsonWebToken, $this->secret);
     }
+    
+    
     return Json::encode([
       'data' => [
         'type'  => static::REQUEST_TYPE,

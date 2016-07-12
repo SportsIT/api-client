@@ -85,6 +85,10 @@ class ClaimsSetAttribute extends AbstractAttribute
     return $this;
   }
   
+  public function toArray() {
+    return $this->value;
+  }
+  
   protected function validateClaim($claimName, &$claim) {
     if (empty($claim)) {
       

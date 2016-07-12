@@ -108,7 +108,7 @@ class JsonWebToken extends AbstractToken {
     $this->setClaims(new Attribute\ClaimsSetAttribute($payload));
 
     $expiration = $this->getClaim('exp');
-    $this->setExpireDate(($expiration ? $expiration->value : ''));
+    $this->setExpireTime(($expiration ? $expiration->value : ''));
     $this->token = $this->encode($this->getHeaders()) . '.' . $this->encode($this->getClaims());
   }
   
@@ -180,14 +180,12 @@ class JsonWebToken extends AbstractToken {
   public function validate() {
     if (empty($this->token)) {
       throw new \Exception('Invalid Token - Token is empty or not set');
-    } elseif (empty($this->getExpireDate()) || $this->isExpired()) {
+    } elseif (empty($this->getExpireTime()) || $this->isExpired()) {
 
       throw new \Exception('Expired Token - Token is not currently valid');
-      // @TODO: Add in lookup for issuer
 
-    } elseif ($this->getClaim('iss')->value != 'apps.dashplatform.com') {
-      throw new \Exception('Unrecognized Issuer - Issuing principle not recognized. DashPlatform is only valid issuer currently.');
     }
+    
     return true;
   }
 

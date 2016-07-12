@@ -42,12 +42,12 @@ use DashApi\Transport\Token\AbstractToken;
  * @package DashApi\Transport\OAuth2\Token
  * @author Nate Strandberg <nate@sports-it.com>
  */
-abstract class OAuth2Token extends AbstractToken {
+abstract class Token extends AbstractToken {
 
   /**
    * The default number of seconds an access token is valid for.
    */
-  const EXPIRE_TIME_DEFAULT_SECONDS = '86400'; // 24hrs
+  const EXPIRE_TIME_DEFAULT = '600'; // 10 Minutes - @RFC6750 Recommended
 
   /**
    * @var string
@@ -120,7 +120,7 @@ abstract class OAuth2Token extends AbstractToken {
    */
   public function getExpireDate() {
     if (empty($this->expireDate)) {
-      $this->expireDate = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT_SECONDS);
+      $this->expireDate = Carbon::now()->addSeconds(self::EXPIRE_TIME_DEFAULT);
     }
     return $this->expireDate;
   }

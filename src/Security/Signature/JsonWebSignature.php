@@ -35,6 +35,11 @@ class JsonWebSignature {
    * @var string $payload BASE64URL(JWS Payload)
    */
   //public $payload;
+  
+  /**
+   * @var JsonWebToken $jwt
+   */
+  protected $jwt;
   /**
    * @var string $signature BASE64URL(JWS Signature)
    */
@@ -59,6 +64,8 @@ class JsonWebSignature {
     } else {
       $this->secret = pack('H*', $secret);
     }
+    
+    $this->jwt = $token;
     
     /**
      * Init JWS following rfc steps
@@ -99,6 +106,10 @@ class JsonWebSignature {
    */
   public function getType() {
     return strtolower(self::NAME);
+  }
+  
+  public function getJsonWebToken() {
+    return $this->jwt;
   }
   
   /**

@@ -1,18 +1,14 @@
 <?php
-/**
- * Created by Tim Turner <tim.turner@sports-it.com>
- * Created on: [5/9/16]
- */
 namespace DashApi\Transport\Token\OAuth2\Bearer;
-use DashApi\Transport\Token\OAuth2\OAuth2Token;
+use DashApi\Transport\Token\OAuth2\Token;
 
 /**
  * Class Bearer
  *
  * @package SIT\Auth\OAuth2\Token
- * @author Nate Strandberg <nate@sports-it.com>
+ * @author Nate Strandberg <nate@sports-it.com>, Tim Turner <tim.turner@sports-it.com>
  */
-class Bearer extends OAuth2Token
+class Bearer extends Token
 {
   const NAME = 'BEARER';
   /**
