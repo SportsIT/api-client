@@ -2,6 +2,7 @@
 namespace DashApi\Security\Signature;
 
 use DashApi\Transport\Token\JsonWebToken;
+use SIT\JsonApi\Exception\JsonApiException;
 
 /**
  * Class JsonWebSignature
@@ -90,12 +91,21 @@ class JsonWebSignature {
   /**
    * @see https://tools.ietf.org/html/rfc7515#section-5.2 Message Signature or MAC Validation
    * 
-   * @param null $signature
+   * @param string $signature       Hash of JWT, signed using client's api secret key.
+   * @param bool $recursiveValidate Validate contained objects, e.g. nested JWT(s), JWTS(s), JWE(s).
    */
-  public function validate($signature = null) {
+  public function validate($signature = '', $recursiveValidate = true) {
     if ($this->getSignature() != $signature) {
-      // UnauthorizedException
-      throw new \Exception("Invalid Token - Token signatures do not match, possible data corruption or tampering");
+      // Throw if encoded request hashes do not match per company's key..
+      throw new JsonApiException(
+        'Invalid Request Token',
+        'Request could not be validated.',
+        ['sourcePointer' => '/data/attributes/signature']
+      );
+    }
+  
+    if ($recursiveValidate) {
+      $this->jwt->validate();
     }
   }
   

@@ -35,15 +35,24 @@ class HeaderAttribute extends AbstractAttribute
   }
   
   public function addHeader($parameters) {
-    if (!is_array($parameters)) {
-      throw new \InvalidArgumentException(__CLASS__ . '->' . __FUNCTION__ . ' expected argument of type `array`, but received type `' . gettype($parameters) . '`');
+    if (!is_array($parameters) && !is_object($parameters)) {
+      
+      throw new \InvalidArgumentException(
+        __CLASS__ . '->' . __FUNCTION__ . ' expected argument type as one of: `array`, `object` but received type `' . gettype($parameters) . '`'
+      );
+      
     } else {
       
-      foreach ($parameters as $parameterName => $value) {
-        
+      foreach (
+        is_object($parameters)
+          ? get_object_vars($parameters)
+          : $parameters
+        as $parameterName => $value) {
+    
         // Add element as property of parameters object
         $this->setParameter($parameterName, $value);
       }
+      
     }
   }
   

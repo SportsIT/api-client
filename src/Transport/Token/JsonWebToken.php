@@ -1,12 +1,15 @@
 <?php
 namespace DashApi\Transport\Token;
 //use DashApi\Transport\Token\AbstractToken;
+use Aws\Common\Exception\RuntimeException;
 use DashApi\Transport\Token\JWT;
 use DashApi\Transport\Token\JWT\Claim;
 use DashApi\Transport\Token\JWT\Header;
 use DashApi\Transport\Token\JWT\Attribute;
 use DashApi\Transport\Token\JWT\Attribute\ClaimsSetAttribute;
 use DashApi\Transport\Token\JWT\Attribute\HeaderAttribute;
+
+use Carbon\Carbon;
 
 /**
  * Class JsonWebToken
@@ -113,6 +116,28 @@ class JsonWebToken extends AbstractToken {
   }
   
   /**
+   * @return bool
+   */
+  public function isExpired() {
+    
+    if (!empty($expireTime = $this->getClaim('exp'))) {
+      
+      $expired = Carbon::now()->gt(Carbon::createFromTimestamp($expireTime->value));
+      
+    } elseif (!empty($issueAtTime = $this->getClaim('iat'))) {
+      
+      $expired = Carbon::now()->gt(
+        Carbon::createFromTimestamp($issueAtTime->value + static::EXPIRE_TIME_DEFAULT)
+      );
+      
+    } else {
+      throw new RuntimeException("Could not resolve token expiration time. Token missing one of `exp`, `iat` claims.");
+    }
+    
+    return $expired;
+  }
+  
+  /**
    * @param string $name
    *
    * @return mixed
@@ -167,7 +192,7 @@ class JsonWebToken extends AbstractToken {
     if ($headers instanceof HeaderAttribute) {
       $this->setAttribute('header', $headers);
     } elseif (is_array($headers)) {
-      $this->setAttribute('header', new ClaimsSetAttribute($headers));
+      $this->setAttribute('header', new HeaderAttribute($headers));
     } else {
       throw new \LogicException(sprintf("Received invalid argument type `%s`, expecting `HeaderAttribute` or `array`.", gettype($headers)));
     }
@@ -180,13 +205,9 @@ class JsonWebToken extends AbstractToken {
   public function validate() {
     if (empty($this->token)) {
       throw new \Exception('Invalid Token - Token is empty or not set');
-    } elseif (empty($this->getExpireTime()) || $this->isExpired()) {
-
+    } elseif ($this->isExpired()) {
       throw new \Exception('Expired Token - Token is not currently valid');
-
     }
-    
-    return true;
   }
 
   /**

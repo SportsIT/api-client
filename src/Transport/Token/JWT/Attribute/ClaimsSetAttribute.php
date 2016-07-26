@@ -35,11 +35,19 @@ class ClaimsSetAttribute extends AbstractAttribute
   }
   
   public function addClaims($claims) {
-    if (!is_array($claims)) {
-      throw new \InvalidArgumentException(__CLASS__ . '->' . __FUNCTION__ . ' expected argument of type `array`, but received type `' . gettype($claims) . '`');
+    if (!is_array($claims) && !is_object($claims)) {
+      
+      throw new \InvalidArgumentException(
+        __CLASS__ . '->' . __FUNCTION__ . ' expected argument of type `array`, but received type `' . gettype($claims) . '`'
+      );
+      
     } else {
       
-      foreach ($claims as $claimName => $value) {
+      foreach (
+        is_object($claims)
+          ? get_object_vars($claims)
+          : $claims
+        as $claimName => $value) {
         
         // Add element as property of claims object
         $this->setClaim($claimName, $value);

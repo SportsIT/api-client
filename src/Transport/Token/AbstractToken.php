@@ -18,7 +18,7 @@ abstract class AbstractToken implements TokenInterface {
   /**
    * The default number of seconds an access token is valid for.
    */
-  const EXPIRE_TIME_DEFAULT = '86400'; // 24hrs
+  const EXPIRE_TIME_DEFAULT = 86400; // 24hrs
   
   /**
    * @var int $ID Immutable unique token ID.

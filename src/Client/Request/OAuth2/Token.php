@@ -35,6 +35,9 @@ use DashApi\Transport\Token\OAuth2\AuthorizationCode;
  *   - [opt] expires_in (recommended)
  *   - [opt] refresh_token
  *   - [req|opt] scope Optional only if identical to client's request scope
+ * 
+ * Required JWT Claims for valid Authorization Request Token:
+ *   - 
  *
  *
  * @package DashApi\Transport\OAuth2\Token
@@ -45,7 +48,6 @@ final class Token extends Resource
   public function __construct(AuthorizationCode $code) {
     $headers = $code->getJsonWebToken()->getHeaders();
     $claims = $code->getJsonWebToken()->getClaims();
-    $test = "";
     
     parent::__construct(
       'auth/tokens',

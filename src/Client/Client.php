@@ -30,6 +30,7 @@ final class Client {
   const REQUEST_PATH_SEG_AUTH_TOKENS = '/auth/tokens';
   const REQUEST_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
   const REQUEST_EXPIRE_TIME = 86400;
+  const REQUEST_NBF_CLOCK_SKEW = 300;
   const REQUEST_TOKEN_TYPE = 'JWS'; // Allowed: JWT | JWS | JWE
   
   /**
@@ -164,10 +165,12 @@ final class Client {
    *                                  Valid types are JSON object as a string or associative array.
    *                                  Default claims set:
    *                                    Registered Claims:
-   *                                      'iat' - (int)    Current timestamp.
-   *                                      'jti' - (string) Random 32 chars (256 bits) of binary encoded in base64.
-   *                                      'iss' - (string) SERVER_NAME provided by superglobal $_SERVER.
-   *                                      'exp' - (int)    Current timestamp + 86400 seconds (1 day).
+   *                                      'iat' - (int)     Issued at: Current timestamp, when the token was created.
+   *                                      'jti' - (string)  JWT ID: Random 32 chars (256 bits) of binary encoded in base64.
+   *                                      'iss' - (string)  Issuer: SERVER_NAME provided by superglobal $_SERVER.
+   *                                      'aud' - (string)  Audience: Recipients
+   *                                      'exp' - (int)     Expiration: Current timestamp + 86400 seconds (1 day).
+   *                                      'nbf' - (int)     Not before: Time at and after which JWT is valid.
    *                                    Private Claims:
    *                                      'cco' - (string) Company code of organization (same as DASH Platform login).
    *                                      'fid' - (int)    Facility ID to get requested data for.
@@ -250,20 +253,33 @@ final class Client {
       $this->claims = [
         // Registered Claims:
         
-        // Issued At Time - (int) Current timestamp specifying when token was created.
-        'iat' => time(), 
-        
         // JWT ID - (string) Random 32 characters (256 bits) of binary encoded in base64.
-        'jti' => base64_encode(mcrypt_create_iv(32)),
+        'jti' => base64_encode(mcrypt_create_iv(16)),
+
         
+        
+        // Audience - (string) URI `host` segment for server expected to receive this request.
+        'aud' => static::REQUEST_HOST,
+
+        // @todo: May need to review / test resolution logic, e.g. checking $_SERVER['HTTP_HOST']
         // Issuer - (string) SERVER_NAME provided by superglobal $_SERVER.
         'iss' => $_SERVER['SERVER_NAME'],
         
+        // Subject - (string) DASH Platform company code for the client.
+        'sub' => $this->companyCode,
+        
+        // Issued At Time - (int) Current timestamp specifying when token was created.
+        'iat' => time(),
+
         // Expiration Time - (int) Current timestamp + 86400 seconds (1 day).
-        'exp' => time() + static::REQUEST_EXPIRE_TIME,
+        //'exp' => time() + static::REQUEST_EXPIRE_TIME,
+
+        // Not Before Time - (int) Current timestamp - 300 seconds (5 min).
+        //'nbf' => time() - static::REQUEST_NBF_CLOCK_SKEW,
         
         // Private Claims:
         
+        // @deprecated Use (sub) Subject claim for CompanyCode.FacilityID
         // Company Code - (string) Company code of organization (same as DASH Platform login).
         'cco' => $this->companyCode,
         
@@ -368,7 +384,7 @@ final class Client {
       );
     }
   
-    $authCode = new OAuth2\AuthorizationCode($this->jsonWebToken, $this->secret);
+    $authCode = new OAuth2\AuthorizationCode(new OAuth2\AuthorizationToken($this->jsonWebToken->getToken()), $this->secret);
     $tokenRequest = new Request\OAuth2\Token($authCode);
     //$tokenRequest = new Request\OAuth2\Token(
     //  $this->header,

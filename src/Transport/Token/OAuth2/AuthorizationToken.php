@@ -8,10 +8,10 @@ use InvalidArgumentException;
 
 /**
  * Created by Tim Turner <tim.turner@sports-it.com>
- * Created on: [7/11/16]
+ * Created on: [7/25/16]
  */
 
-final class Access extends JsonWebToken
+final class AuthorizationToken extends JsonWebToken
 {
   const REQUIRED_CLAIMS = [
     Claim\JWTIDClaim::NAME,
@@ -25,7 +25,8 @@ final class Access extends JsonWebToken
     parent::validate();
   
     foreach (static::REQUIRED_CLAIMS as $key) {
-      if (!array_key_exists($key, $this->getClaims())) {
+      //$claims = $this->getClaims()->toArray();
+      if ($this->getClaim($key) == null) {
         throw new InvalidArgumentException(
           sprintf(
             "Invalid Request Token - Authorization request missing required `claims.$key` claim. Claims received: %s",
@@ -34,7 +35,6 @@ final class Access extends JsonWebToken
         );
       }
     }
-    
     
     
   }
