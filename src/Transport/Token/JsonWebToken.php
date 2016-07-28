@@ -67,6 +67,7 @@ class JsonWebToken extends AbstractToken {
     } elseif (is_array($tokenData)) {
 
       if (!isset($tokenData['header']) || !isset($tokenData['payload'])) {
+        //throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
         throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
       } else {
         $header  = $tokenData['header'];
@@ -76,6 +77,7 @@ class JsonWebToken extends AbstractToken {
     } elseif ($tokenData instanceof \stdClass) {
 
       if (!isset($tokenData->header) || !isset($tokenData->payload)) {
+        //throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
         throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
       } else {
         $header = $tokenData->header;
@@ -87,6 +89,7 @@ class JsonWebToken extends AbstractToken {
       $payload = $tokenData->claims;
 
     } else {
+      //throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JsonWebToken initialization');
       throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JsonWebToken initialization');
     }
     
