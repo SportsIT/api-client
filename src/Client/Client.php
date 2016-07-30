@@ -106,6 +106,11 @@ final class Client {
   protected $defaultRequestClaims;
   
   /**
+   * @var string
+   */
+  protected $defaultIssuer;
+  
+  /**
    * @var \DashApi\Transport\Token\JsonWebToken
    */
   protected $jsonWebToken;
@@ -186,15 +191,27 @@ final class Client {
    * 
    */
   public function __construct($companyCode, $facilityID, $secret, $authorization = null, $apiUrl = null, $header = null, $claims = null) {
-    $this->companyCode = $companyCode;
-    $this->facilityID = $facilityID;
-    $this->secret = $secret;
     
+    if (empty($companyCode)) {
+      throw new \RuntimeException(sprintf("Invalid format for `companyCode` parameter. Expected (string), got: `%s`", print_r($companyCode, true)));
+    }
+    $this->companyCode = $companyCode;
+  
+    if (empty($facilityID) || !is_numeric($facilityID) ) {
+      throw new \RuntimeException(sprintf("Invalid format for `facilityID` parameter. Expected (int) or (string) numeric, got: `%s`", print_r($facilityID, true)));
+    }
+    $this->facilityID = $facilityID;
+  
+    if (empty($secret)) {
+      throw new \RuntimeException("Invalid format for `secret` parameter. Expected base64 encoded (string).");
+    }
+    $this->secret = $secret;
+  
     if ($authorization['employee'] !== null) {
       if (is_numeric($authorization['employee'])) {
         $this->employeeID = $authorization['employee'];
       } else {
-        throw new \RuntimeException(sprintf("Invalid format for authorization.employee parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['employee'], true)));
+        throw new \RuntimeException(sprintf("Invalid format for authorization.employee parameter. Expected (int) or (string) numeric, got: `%s`", print_r($authorization['employee'], true)));
       }
     }
     
@@ -202,7 +219,7 @@ final class Client {
       if (is_numeric($authorization['customer'])) {
         $this->customerID = $authorization['customer'];
       } else {
-        throw new \RuntimeException(sprintf("Invalid format for authorization.customer parameter. Expected (int) or (string) numeric, got: %s", print_r($authorization['customer'], true)));
+        throw new \RuntimeException(sprintf("Invalid format for authorization.customer parameter. Expected (int) or (string) numeric, got: `%s`", print_r($authorization['customer'], true)));
       }
     }
   
@@ -212,7 +229,7 @@ final class Client {
       } elseif (is_array($authorization['scope'])) {
         $this->scope = $authorization['scope'];
       } else {
-        throw new \RuntimeException(sprintf("Invalid format for authorization.scope parameter. Expected (string) csv or (array) of dot paths, got: %s", print_r($authorization['scope'], true)));
+        throw new \RuntimeException(sprintf("Invalid format for authorization.scope parameter. Expected (string) csv or (array) of dot paths, got: `%s`", print_r($authorization['scope'], true)));
       }
     }
   
@@ -222,7 +239,7 @@ final class Client {
       } elseif (is_array($authorization['auth'])) {
         $this->auth = $authorization['auth'];
       } else {
-        throw new \RuntimeException(sprintf("Invalid format for authorization.auth parameter. Expected (string) csv or (array) of SIT Authorizations, got: %s", print_r($authorization['auth'], true)));
+        throw new \RuntimeException(sprintf("Invalid format for authorization.auth parameter. Expected (string) csv or (array) of SIT Authorizations, got: `%s`", print_r($authorization['auth'], true)));
       }
     }
     
@@ -232,6 +249,9 @@ final class Client {
     } else {
       $this->apiUrl = static::REQUEST_SCHEMA . '://' . static::REQUEST_HOST . static::REQUEST_PATH_SEG_API;
     }
+    
+    // Resolve default `iss` Issuer claim, using either S_SERVER['SERVER_NAME'], $S_SERVER['HTTP_HOST']
+    $this->resolveIssuer();
     
     // Default JOSE header
     if ($header !== null) {
@@ -263,7 +283,7 @@ final class Client {
 
         // @todo: May need to review / test resolution logic, e.g. checking $_SERVER['HTTP_HOST']
         // Issuer - (string) SERVER_NAME provided by superglobal $_SERVER.
-        'iss' => $_SERVER['SERVER_NAME'],
+        'iss' => $this->defaultIssuer,
         
         // Subject - (string) DASH Platform company code for the client.
         'sub' => $this->companyCode,
@@ -354,7 +374,20 @@ final class Client {
       ]
     );
     
-    return $result->getBody();
+    try {
+      /** @var object $responseData */
+      $responseData = Json::decode((string)$result->getBody());
+    } catch (\RuntimeException $e) {
+      $message = 'Unable to decode server response as JSON';
+    
+      // Add the response body to the exception if we're debugging..
+      if ($this->debugMode) {
+        $message .= "\r\n" . print_r((string)$result->getBody(), true);
+      }
+      throw new \RuntimeException($message, null, $e);
+    }
+    
+    return $responseData;
   }
   
   /**
@@ -391,9 +424,9 @@ final class Client {
     //  $this->claims,
     //  $this->jsonWebSignature->getSignature()
     //);
-    
+    $createURL = $this->getTokenCreateUrl();
     $result = (new GuzzleClient)->post(
-      $this->getTokenCreateUrl(),
+      $createURL,
       [
         'headers'     => $tokenRequest->getHeader(),
         'body'        => (string) $tokenRequest,
@@ -442,7 +475,7 @@ final class Client {
    * @throws \LogicException
    * @throws \RuntimeException
    */
-  public function getAuthRequestToken($header = null, $claims = null) {
+  public function getAuthRequestToken($header = null, $claims = null, $returnObject = false) {
     $tokenData = new \stdClass();
     
     $tokenData->header = $header ?: $this->header;
@@ -470,7 +503,7 @@ final class Client {
         break;
     }
     
-    return $this->token;
+    return $returnObject ? $this->jsonWebSignature : $this->token;
   }
   
   /**
@@ -600,12 +633,31 @@ final class Client {
       $this->accessToken = $this->getAccessToken();
     } else {
 
+      // @todo: This logic needs reworking, most likely we can defer expiration check here.
       $JWT = new Token\JsonWebToken($this->accessToken);
-      if ($JWT->getExpireDateInSeconds(false) < 0) {
+      if ($JWT->isExpired()) {
         $this->accessToken = $this->getAccessToken();
       }
     }
 
     return $this;
+  }
+  
+  /**
+   * @todo: Verify this works via CLI for test machines.
+   */
+  protected function resolveIssuer() {
+    if (!empty($_SERVER['SERVER_NAME'])) {
+      
+      $this->defaultIssuer = $_SERVER['SERVER_NAME'];
+    } elseif (!empty($_SERVER['HTTP_HOST'])) {
+      
+      $this->defaultIssuer = $_SERVER['HTTP_HOST'];
+    } else {
+      
+      throw new \RuntimeException(
+        "Could not resolve hostname for use in `iss` Issuer Claim."
+      );
+    }
   }
 }

@@ -1,7 +1,6 @@
 <?php
 namespace DashApi\Transport\Token;
 //use DashApi\Transport\Token\AbstractToken;
-use Aws\Common\Exception\RuntimeException;
 use DashApi\Transport\Token\JWT;
 use DashApi\Transport\Token\JWT\Claim;
 use DashApi\Transport\Token\JWT\Header;
@@ -68,7 +67,7 @@ class JsonWebToken extends AbstractToken {
 
       if (!isset($tokenData['header']) || !isset($tokenData['payload'])) {
         //throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
-        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
+        throw new \Exception('Invalid Token Structure - Invalid token structure on JsonWebToken initialization');
       } else {
         $header  = $tokenData['header'];
         $payload = $tokenData['payload'];
@@ -78,7 +77,7 @@ class JsonWebToken extends AbstractToken {
 
       if (!isset($tokenData->header) || !isset($tokenData->payload)) {
         //throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
-        throw new \Exception('Invalid Token Structure', 'Invalid token structure on JsonWebToken initialization');
+        throw new \Exception('Invalid Token Structure - Invalid token structure on JsonWebToken initialization');
       } else {
         $header = $tokenData->header;
         $payload = $tokenData->payload;
@@ -90,7 +89,7 @@ class JsonWebToken extends AbstractToken {
 
     } else {
       //throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JsonWebToken initialization');
-      throw new \Exception('Invalid DataType to create token from', 'Unable to handle token type on JsonWebToken initialization');
+      throw new \Exception('Invalid DataType to create token from - Unable to handle token type on JsonWebToken initialization');
     }
     
     /* @deprecated in favor of letting HeaderAttribute manage FQCN resolution
@@ -134,7 +133,7 @@ class JsonWebToken extends AbstractToken {
       );
       
     } else {
-      throw new RuntimeException("Could not resolve token expiration time. Token missing one of `exp`, `iat` claims.");
+      throw new \RuntimeException("Could not resolve token expiration time. Token missing one of `exp`, `iat` claims.");
     }
     
     return $expired;
