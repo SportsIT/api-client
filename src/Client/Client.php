@@ -197,7 +197,7 @@ final class Client {
       $this->claims = [
         'iat' => time(),
         'jti' => base64_encode(mcrypt_create_iv(32)),
-        'iss' => $_SERVER['SERVER_NAME'], // client hostname / domain
+        'iss' => $_SERVER['HTTP_HOST'], // client hostname / domain
         'exp' => time() + static::REQUEST_EXPIRE_TIME,
         'cco' => $this->companyCode, // Private Claim
         'fid' => $this->facilityID, // Private Claim
