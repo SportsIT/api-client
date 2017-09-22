@@ -137,7 +137,7 @@ final class Client {
     $this->facilityID = $facilityID;
     $this->secret = $secret;
     
-    if ($authorization['employee'] !== null) {
+    if (array_key_exists('employee', $authorization) && $authorization['employee'] !== null) {
       if (is_numeric($authorization['employee'])) {
         $this->employeeID = $authorization['employee'];
       } else {
@@ -145,7 +145,7 @@ final class Client {
       }
     }
     
-    if ($authorization['customer'] !== null) {
+    if (array_key_exists('customer', $authorization) && $authorization['customer'] !== null) {
       if (is_numeric($authorization['customer'])) {
         $this->customerID = $authorization['customer'];
       } else {
@@ -153,7 +153,7 @@ final class Client {
       }
     }
   
-    if ($authorization['scope'] !== null) {
+    if (array_key_exists('scope', $authorization) && $authorization['scope'] !== null) {
       if (is_string($authorization['scope'])) {
         $this->scope = explode(',', $authorization['scope']);
       } elseif (is_array($authorization['scope'])) {
@@ -163,7 +163,7 @@ final class Client {
       }
     }
   
-    if ($authorization['auth'] !== null) {
+    if (array_key_exists('auth', $authorization) && $authorization['auth'] !== null) {
       if (is_string($authorization['auth'])) {
         $this->auth = explode(',', $authorization['auth']);
       } elseif (is_array($authorization['auth'])) {
@@ -203,19 +203,19 @@ final class Client {
         'fid' => $this->facilityID, // Private Claim
       ];
   
-      if ($this->employeeID) {
+      if (property_exists($this, 'employeeID') && $this->employeeID) {
         $this->claims['eid'] = $this->employeeID; // Private Claim
       }
   
-      if ($this->customerID) {
+      if (property_exists($this, 'customerID') && $this->customerID) {
         $this->claims['cid'] = $this->customerID; // Private Claim
       }
   
-      if ($this->scope) {
+      if (property_exists($this, 'scope') && $this->scope) {
         $this->claims['scope'] = $this->scope; // Private Claim
       }
       
-      if ($this->auth) {
+      if (property_exists($this, 'auth') && $this->auth) {
         // @todo: rename claim 'authorizations' -> 'auth'
         $this->claims['authorizations'] = $this->auth; // Private Claim
       } 
