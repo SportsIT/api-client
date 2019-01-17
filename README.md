@@ -1,4 +1,4 @@
-### DASH Platform - API Client Library
+### Dash - API Client Library
 
 _Additional documentation to follow._
 
