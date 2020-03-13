@@ -13,7 +13,7 @@ use Dash\Exceptions\NotAuthenticatedException;
  */
 class Client
 {
-    const API_BASE_URL = 'https://api.dashplatform.com/api/v1';
+    const API_BASE_URL = 'https://api.dashplatform.com/api/v1/';
 
     const AUTH_GRANT_TYPE = 'client_credentials';
 
@@ -50,7 +50,7 @@ class Client
      */
     public function authenticate()
     {
-        $response = $this->guzzle->post('/company/auth/token', [
+        $response = $this->guzzle->post('company/auth/token', [
             'query' => [
                 'company' => $this->config->getCompanyCode(),
             ],
@@ -139,7 +139,7 @@ class Client
             $uri = static::addParameterSeparator($uri, '?') . $sort;
         }
 
-        return "/{$resource}{$uri}";
+        return "{$resource}{$uri}";
     }
 
     /**
