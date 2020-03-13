@@ -1,7 +1,5 @@
 .idea
-composer.lock
 composer.phar
-vendor/
 
 *.iml
 *.DS_Store
