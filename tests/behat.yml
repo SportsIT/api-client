@@ -1,5 +1,0 @@
-default:
-  suites:
-    utility:
-      paths: [ %paths.base%/features/utility ]
-      contexts: [ \DashApi\Test\Context\DashApiContext ]

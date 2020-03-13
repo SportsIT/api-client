@@ -14,30 +14,20 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Tim Turner",
-      "email": "tim.turner@sports-it.com",
-      "homepage": "https://github.com/ronindesign",
+      "name": "Jordan Gosney",
+      "email": "jordan@dashplatform.com",
+      "homepage": "https://github.com/Wizofgoz",
       "role": "Software Engineer"
-    },
-    {
-      "name": "Nate Strandberg",
-      "email": "nate@sports-it.com",
-      "role": "Systems Architect"
     }
   ],
   "require": {
-      "guzzlehttp/guzzle": "^6.2",
-      "nesbot/carbon": "^1.21"
+    "php": ">=5.6",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^6.0"
   },
   "autoload": {
     "psr-4": {
-      "DashApi\\Client\\": "src/Client/",
-      "DashApi\\": "src/",
-
-      "DashApi\\Tests\\": "tests/"
+      "Dash\\": "src/"
     }
-  },
-  "require-dev": {
-    "behat/behat": "^3.1"
   }
 }
