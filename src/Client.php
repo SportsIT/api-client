@@ -2,6 +2,8 @@
 
 namespace Dash;
 
+use Dash\Concerns\BuildsUris;
+use Dash\Concerns\MakesJsonApiRequests;
 use Dash\Exceptions\AuthException;
 use Dash\Exceptions\NotAuthenticatedException;
 
@@ -13,9 +15,17 @@ use Dash\Exceptions\NotAuthenticatedException;
  */
 class Client
 {
-    const API_BASE_URL = 'https://api.dashplatform.com/api/v1/';
+    use BuildsUris, MakesJsonApiRequests;
+
+    const API_BASE_URL = 'https://api.dashplatform.com/v1/';
 
     const AUTH_GRANT_TYPE = 'client_credentials';
+
+    const VERSION = '2.1.0';
+
+    const USERAGENT_FORMAT = 'DashApiClient/%s (PHP %s) GuzzleHttp/%s';
+
+    const JSONAPI_CONTENT_TYPE = 'application/vnd.api+json';
 
     /** 
      * @var \GuzzleHttp\Client $guzzle
@@ -93,70 +103,22 @@ class Client
     {
         $config = [
             'base_uri' => static::API_BASE_URL,
+            'headers' => [
+                'User-Agent' => sprintf(static::USERAGENT_FORMAT, static::VERSION, phpversion(), \GuzzleHttp\Client::VERSION),
+                'Content-Type' => static::JSONAPI_CONTENT_TYPE,
+                'Accept' => static::JSONAPI_CONTENT_TYPE,
+            ],
         ];
 
         if (isset($this->token)) {
-            $config['headers'] = [
-                'Authorization' => "Bearer {$this->token}",
-            ];
+            $config = array_merge_recursive($config, [
+                'headers' => [
+                    'Authorization' => "Bearer {$this->token}",
+                ]
+            ]);
         }
 
         return $config;
-    }
-
-    /**
-     * @param string $resource
-     * @param array $filters
-     * @param array $includes
-     * @param string|null $sort
-     * @return string
-     */
-    public static function buildIndexRequestUri($resource, $filters = [], $includes = [], $sort = null)
-    {
-        $uri = '';
-
-        if (!empty($filters)) {
-            $filtersStr = '';
-
-            foreach ($filters as $key => $value) {
-                $filtersStr = static::addParameterSeparator($filtersStr) . "filter[{$key}]={$value}";
-            }
-
-            $uri = "?{$filtersStr}";
-        }
-
-        if (!empty($includes)) {
-            $includeStr = '';
-
-            foreach ($includes as $include) {
-                $includeStr = static::addParameterSeparator($includeStr, 'include=', ',') . $include;
-            }
-
-            $uri = static::addParameterSeparator($uri, '?') . $includeStr;
-        }
-
-        if (isset($sort)) {
-            $uri = static::addParameterSeparator($uri, '?') . $sort;
-        }
-
-        return "{$resource}{$uri}";
-    }
-
-    /**
-     * @param string $str
-     * @param string $empty
-     * @param string $else
-     * @return string
-     */
-    protected static function addParameterSeparator($str, $empty = '', $else = '&')
-    {
-        if ($str === '') {
-            $str .= $empty;
-        } else {
-            $str .= $else;
-        }
-
-        return $str;
     }
 
     /**
