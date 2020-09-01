@@ -15,12 +15,12 @@ $filters = [];
 
 // include the resource areas for each resource
 $includes = [
-    'resourceAreas',
+  'resourceAreas',
 ];
 
 // Call authenticate first to get an access token
 $response = $client->authenticate()
-    ->get(\Dash\Client::buildIndexRequestUri('resources', $filters, $includes));
+  ->get(\Dash\Client::buildIndexRequestUri('resources', $filters, $includes));
 
 // decode the json data to associative array
 $data = json_decode($response->getBody()->getContents(), true);
