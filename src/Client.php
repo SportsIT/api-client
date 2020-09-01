@@ -109,9 +109,18 @@ class Client
      * @param array $filters
      * @param array $includes
      * @param string|null $sort
+     * @param PageObject|null $page
+     * @param array $custom
      * @return string
      */
-    public static function buildIndexRequestUri($resource, $filters = [], $includes = [], $sort = null)
+    public static function buildIndexRequestUri(
+        $resource,
+        $filters = [],
+        $includes = [],
+        $sort = null,
+        PageObject $page = null,
+        $custom = []
+    )
     {
         $uri = '';
 
@@ -119,7 +128,7 @@ class Client
             $filtersStr = '';
 
             foreach ($filters as $key => $value) {
-                $filtersStr = static::addParameterSeparator($filtersStr) . "filter[{$key}]={$value}";
+                $filtersStr = static::addParameterSeparator($filtersStr, '') . "filter[{$key}]={$value}";
             }
 
             $uri = "?{$filtersStr}";
@@ -132,11 +141,31 @@ class Client
                 $includeStr = static::addParameterSeparator($includeStr, 'include=', ',') . $include;
             }
 
-            $uri = static::addParameterSeparator($uri, '?') . $includeStr;
+            $uri = static::addParameterSeparator($uri) . $includeStr;
         }
 
         if (isset($sort)) {
-            $uri = static::addParameterSeparator($uri, '?') . $sort;
+            $uri = static::addParameterSeparator($uri) . $sort;
+        }
+
+        if (isset($page)) {
+            if ($page->getPageNumber() !== null) {
+                $uri = static::addParameterSeparator($uri) . 'page[number]=' . $page->getPageNumber();
+            }
+
+            if ($page->getPageSize() !== null) {
+                $uri = static::addParameterSeparator($uri) . 'page[size]=' . $page->getPageSize();
+            }
+        }
+
+        if (!empty($custom)) {
+            $customStr = '';
+
+            foreach ($custom as $parameterName => $parameterValue) {
+                $customStr = static::addParameterSeparator($customStr, "{$parameterName}=", ',') . $parameterValue;
+            }
+
+            $uri = static::addParameterSeparator($uri) . $customStr;
         }
 
         return "{$resource}{$uri}";
@@ -148,7 +177,7 @@ class Client
      * @param string $else
      * @return string
      */
-    protected static function addParameterSeparator($str, $empty = '', $else = '&')
+    protected static function addParameterSeparator($str, $empty = '?', $else = '&')
     {
         if ($str === '') {
             $str .= $empty;
