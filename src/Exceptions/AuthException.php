@@ -2,6 +2,5 @@
 
 namespace Dash\Exceptions;
 
-class AuthException extends \Exception
-{
+class AuthException extends \Exception {
 }

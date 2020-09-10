@@ -1,9 +1,9 @@
 <?php
 require '../vendor/autoload.php';
 
-$clientID = '<replace with client ID>';
-$clientSecret = '<replace with client secret>';
-$companyCode = '<replace with company code>';
+$clientID = '929abc4b6e78ebff57d321c97869bac2';
+$clientSecret = '14ef2906729c7572a9f58c21ff5f4768';
+$companyCode = 'arenasports_demo';
 
 $dateFormat = 'Y-m-d\TH:i:s';
 

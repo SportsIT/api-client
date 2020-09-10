@@ -29,5 +29,12 @@ $includes = [
 $response = $client->authenticate()
     ->get(\Dash\Client::buildIndexRequestUri('payments', $filters, $includes));
 
+$response = $client
+  ->resource('payments')
+  ->withFilter('date', \Dash\Utils\Filters::OPERATOR_GREATER_THAN_OR_EQUAL, $targetDate->format($dateFormat))
+  ->withFilter('date', \Dash\Utils\Filters::OPERATOR_LESS_THAN, $nextDay->format($dateFormat))
+  ->withIncludePaths('facility', 'paymentType')
+  ->search();
+
 // decode the json data to associative array
 $data = json_decode($response->getBody()->getContents(), true);

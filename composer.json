@@ -21,13 +21,20 @@
     }
   ],
   "require": {
-    "php": ">=5.6",
+    "php": ">=7.0",
     "ext-json": "*",
-    "guzzlehttp/guzzle": "^6.0"
+    "illuminate/support": "5.5.*|5.6.*|5.7.*|5.8.*|^6.0|^7.0",
+    "guzzlehttp/guzzle": "^6.0",
+    "jenssegers/model": "^1.1"
   },
   "autoload": {
     "psr-4": {
       "Dash\\": "src/"
     }
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^2.16",
+    "phan/phan": "^3.0",
+    "phpunit/phpunit": "^6"
   }
 }

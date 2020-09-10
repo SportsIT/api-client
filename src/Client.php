@@ -2,139 +2,114 @@
 
 namespace Dash;
 
+use Dash\Builders\IndexRequestBuilder;
 use Dash\Concerns\BuildsUris;
 use Dash\Concerns\MakesJsonApiRequests;
 use Dash\Exceptions\AuthException;
 use Dash\Exceptions\NotAuthenticatedException;
+use Dash\Models\Item;
 
 /**
- * Class Client
- * @package Dash
+ * Class Client.
  *
  * @mixin \GuzzleHttp\Client
  */
-class Client
-{
-    use BuildsUris, MakesJsonApiRequests;
+class Client {
+  use BuildsUris;
+  use MakesJsonApiRequests;
 
-    const API_BASE_URL = 'https://api.dashplatform.com/v1/';
+  const AUTH_GRANT_TYPE = 'client_credentials';
 
-    const AUTH_GRANT_TYPE = 'client_credentials';
+  const VERSION = '3.0.0';
 
-    const VERSION = '2.1.0';
+  /**
+   * @var \GuzzleHttp\Client
+   */
+  private $client;
 
-    const USERAGENT_FORMAT = 'DashApiClient/%s (PHP %s) GuzzleHttp/%s';
+  /**
+   * @var Configuration
+   */
+  private $config;
 
-    const JSONAPI_CONTENT_TYPE = 'application/vnd.api+json';
+  /**
+   * @var string
+   */
+  private $token;
 
-    /** 
-     * @var \GuzzleHttp\Client $guzzle
-     */
-    private $guzzle;
+  /**
+   * Client constructor.
+   *
+   * @param Configuration $config
+   */
+  public function __construct(Configuration $config) {
+    $this->config = $config;
+    $this->refreshClient();
+  }
 
-    /** 
-     * @var Configuration $config
-     */
-    private $config;
+  /**
+   * Authenticate with the API and get an access token.
+   *
+   * @throws AuthException
+   *
+   * @return $this
+   */
+  public function authenticate() {
+    $response = $this->client->post('company/auth/token', [
+      'query' => [
+        'company' => $this->config->getCompanyCode(),
+      ],
+      'json' => [
+        'grant_type' => static::AUTH_GRANT_TYPE,
+        'client_id' => $this->config->getClientID(),
+        'client_secret' => $this->config->getClientSecret(),
+      ],
+    ]);
 
-    /**
-     * @var string $token
-     */
-    private $token;
+    $body = json_decode($response->getBody()->getContents(), true);
 
-    /**
-     * Client constructor.
-     * @param Configuration $config
-     */
-    public function __construct(Configuration $config)
-    {
-        $this->config = $config;
-        $this->guzzle = $this->buildGuzzleClient();
+    if ($response->getStatusCode() !== 200 || $body['auth'] === false) {
+      throw new AuthException("Error when authorizing: {$body['message']}");
     }
 
-    /**
-     * Authenticate with the API and get an access token
-     *
-     * @return $this
-     * @throws AuthException
-     */
-    public function authenticate()
-    {
-        $response = $this->guzzle->post('company/auth/token', [
-            'query' => [
-                'company' => $this->config->getCompanyCode(),
-            ],
-            'json' => [
-                'grant_type' => static::AUTH_GRANT_TYPE,
-                'client_id' => $this->config->getClientID(),
-                'client_secret' => $this->config->getClientSecret(),
-            ],
-        ]);
+    $this->token = $body['access_token'];
 
-        $body = json_decode($response->getBody()->getContents(), true);
+    $this->refreshClient();
 
-        if ($response->getStatusCode() !== 200 || $body['auth'] === false) {
-            throw new AuthException("Error when authorizing: {$body['message']}");
-        }
+    return $this;
+  }
 
-        $this->token = $body['access_token'];
+  protected function refreshClient() {
+    $this->client = (new GuzzleFactory())->make($this->token);
+    Item::setDocumentClient((new DocumentClientFactory())->make($this->token));
+  }
 
-        $this->guzzle = $this->buildGuzzleClient();
+  /**
+   * Get a builder to access a resource.
+   *
+   * @param string $resourceType
+   *
+   * @return IndexRequestBuilder
+   */
+  public function resource(string $resourceType) {
+    return new IndexRequestBuilder((new DocumentClientFactory())->make($this->token), $resourceType);
+  }
 
-        return $this;
+  /**
+   * Proxy calls to the underlying Guzzle client.
+   *
+   * @param $name
+   * @param $arguments
+   *
+   * @throws NotAuthenticatedException
+   *
+   * @return mixed
+   */
+  public function __call($name, $arguments) {
+    if (!isset($this->token)) {
+      throw new NotAuthenticatedException('Error: Need to authenticate before making API calls');
     }
 
-    /**
-     * Build a new Guzzle client with the current default request config
-     *
-     * @return \GuzzleHttp\Client
-     */
-    protected function buildGuzzleClient()
-    {
-        return new \GuzzleHttp\Client($this->buildGuzzleConfig());
-    }
-
-    /**
-     * Build the default request config for the Guzzle client using the current state
-     *
-     * @return array
-     */
-    protected function buildGuzzleConfig()
-    {
-        $config = [
-            'base_uri' => static::API_BASE_URL,
-            'headers' => [
-                'User-Agent' => sprintf(static::USERAGENT_FORMAT, static::VERSION, phpversion(), \GuzzleHttp\Client::VERSION),
-                'Content-Type' => static::JSONAPI_CONTENT_TYPE,
-                'Accept' => static::JSONAPI_CONTENT_TYPE,
-            ],
-        ];
-
-        if (isset($this->token)) {
-            $config = array_merge_recursive($config, [
-                'headers' => [
-                    'Authorization' => "Bearer {$this->token}",
-                ]
-            ]);
-        }
-
-        return $config;
-    }
-
-    /**
-     * Proxy calls to the underlying Guzzle client
-     *
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     * @throws NotAuthenticatedException
-     */
-    public function __call($name, $arguments)
-    {
-        if (!isset($this->token)) {
-            throw new NotAuthenticatedException('Error: Need to authenticate before making API calls');
-        }
-
-        return $this->guzzle->{$name}(...$arguments);
-    }
+    return $this->client->{$name}(...$arguments);
+  }
 }
