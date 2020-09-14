@@ -39,10 +39,10 @@ abstract class AbstractRelation {
   /**
    * AbstractRelation constructor.
    *
-   * @param HasRelations   $parent
-   * @param string $relationName
+   * @param ItemInterface $parent
+   * @param string       $relationName
    */
-  public function __construct(HasRelations $parent, string $relationName) {
+  public function __construct(ItemInterface $parent, string $relationName) {
     $this->parent = $parent;
     $this->relationName = $relationName;
   }

@@ -3,6 +3,7 @@
 namespace Dash\Tests\Concerns;
 
 use Dash\Concerns\HasRelations;
+use Dash\Interfaces\ItemInterface;
 use Dash\Models\Collection;
 use Dash\Models\Item;
 use Dash\Models\Links;
@@ -14,16 +15,24 @@ use PHPUnit\Framework\TestCase;
 
 class HasRelationsTest extends TestCase {
   /**
+   * @var MockObject&ItemInterface
+   */
+  protected $hasRelations;
+
+  protected function setUp(): void {
+    $this->hasRelations = new Item();
+    parent::setUp();
+  }
+
+  /**
    * @test
    */
   public function it_can_get_and_set_an_item_as_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
 
-    $mock->setRelation('foo', $data);
+    $this->hasRelations->setRelation('foo', $data);
 
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertInstanceOf(HasOneRelation::class, $relation);
     $this->assertTrue($relation->hasIncluded());
     $this->assertSame($data, $relation->getIncluded());
@@ -33,13 +42,11 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_can_get_and_set_a_collection_as_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Collection();
 
-    $mock->setRelation('foo', $data);
+    $this->hasRelations->setRelation('foo', $data);
 
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertInstanceOf(HasManyRelation::class, $relation);
     $this->assertTrue($relation->hasIncluded());
     $this->assertSame($data, $relation->getIncluded());
@@ -49,12 +56,9 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_can_get_and_set_null_as_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
+    $this->hasRelations->setRelation('foo', null);
 
-    $mock->setRelation('foo', null);
-
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertInstanceOf(HasOneRelation::class, $relation);
     $this->assertTrue($relation->hasIncluded());
     $this->assertNull($relation->getIncluded());
@@ -64,12 +68,9 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_does_not_set_false_as_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
+    $this->hasRelations->setRelation('foo', false);
 
-    $mock->setRelation('foo', false);
-
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertInstanceOf(HasOneRelation::class, $relation);
     $this->assertFalse($relation->hasIncluded());
   }
@@ -78,14 +79,12 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_sets_the_links_on_the_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
     $links = new Links([]);
 
-    $mock->setRelation('foo', $data, $links);
+    $this->hasRelations->setRelation('foo', $data, $links);
 
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertSame($links, $relation->getLinks());
   }
 
@@ -93,14 +92,12 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_sets_the_meta_on_the_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
     $meta = new Meta([]);
 
-    $mock->setRelation('foo', $data, null, $meta);
+    $this->hasRelations->setRelation('foo', $data, null, $meta);
 
-    $relation = $mock->getRelation('foo');
+    $relation = $this->hasRelations->getRelation('foo');
     $this->assertSame($meta, $relation->getMeta());
   }
 
@@ -108,119 +105,76 @@ class HasRelationsTest extends TestCase {
    * @test
    */
   public function it_can_get_all_relations() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
 
-    $mock->setRelation('foo', $data);
-    $relation = $mock->getRelation('foo');
+    $this->hasRelations->setRelation('foo', $data);
+    $relation = $this->hasRelations->getRelation('foo');
 
-    $this->assertSame(['foo' => $relation], $mock->getRelations());
+    $this->assertSame(['foo' => $relation], $this->hasRelations->getRelations());
   }
 
   /**
    * @test
    */
   public function it_can_get_a_relation_value() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
 
-    $mock->setRelation('foo', $data);
+    $this->hasRelations->setRelation('foo', $data);
 
-    $this->assertSame($data, $mock->getRelationValue('foo'));
+    $this->assertSame($data, $this->hasRelations->getRelationValue('foo'));
   }
 
   /**
    * @test
    */
   public function it_returns_null_when_getting_an_unexisting_relation_value() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
-
-    $this->assertNull($mock->getRelationValue('foo'));
+    $this->assertNull($this->hasRelations->getRelationValue('foo'));
   }
 
   /**
    * @test
    */
   public function it_returns_a_boolean_indicating_if_it_has_a_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
 
-    $this->assertFalse($mock->hasRelation('foo'));
+    $this->assertFalse($this->hasRelations->hasRelation('foo'));
 
-    $mock->setRelation('foo', $data);
+    $this->hasRelations->setRelation('foo', $data);
 
-    $this->assertTrue($mock->hasRelation('foo'));
+    $this->assertTrue($this->hasRelations->hasRelation('foo'));
   }
 
   /**
    * @test
    */
   public function it_can_unset_a_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
     $data = new Item();
 
-    $mock->setRelation('foo', $data);
-    $this->assertNotNull($mock->getRelation('foo'));
+    $this->hasRelations->setRelation('foo', $data);
+    $this->assertNotNull($this->hasRelations->getRelation('foo'));
 
-    $mock->unsetRelation('foo');
+    $this->hasRelations->unsetRelation('foo');
 
-    $this->assertNull($mock->getRelation('foo'));
+    $this->assertNull($this->hasRelations->getRelation('foo'));
   }
 
   /**
    * @test
    */
   public function it_can_define_a_has_one_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
-
-    $relation = $mock->hasOne('foo-bar');
+    $relation = $this->hasRelations->hasOne('foo-bar');
 
     $this->assertInstanceOf(HasOneRelation::class, $relation);
-    $this->assertSame($relation, $mock->getRelation('foo-bar'));
-  }
-
-  /**
-   * @test
-   */
-  public function it_can_define_a_has_one_relation_with_the_calling_method_as_fallback_name() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
-
-    $relation = $mock->hasOne(Item::class);
-
-    $this->assertInstanceOf(HasOneRelation::class, $relation);
-    $this->assertSame($relation, $mock->getRelation(__FUNCTION__));
+    $this->assertSame($relation, $this->hasRelations->getRelation('foo-bar'));
   }
 
   /**
    * @test
    */
   public function it_can_define_a_has_many_relation() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
-
-    $relation = $mock->hasMany('foo-bar');
+    $relation = $this->hasRelations->hasMany('foo-bar');
 
     $this->assertInstanceOf(HasManyRelation::class, $relation);
-    $this->assertSame($relation, $mock->getRelation('foo-bar'));
-  }
-
-  /**
-   * @test
-   */
-  public function it_can_define_a_has_many_relation_with_the_calling_method_as_fallback_name() {
-    /** @var MockObject&HasRelations $mock */
-    $mock = $this->getMockForTrait(HasRelations::class);
-
-    $relation = $mock->hasMany(Item::class);
-
-    $this->assertInstanceOf(HasManyRelation::class, $relation);
-    $this->assertSame($relation, $mock->getRelation(__FUNCTION__));
+    $this->assertSame($relation, $this->hasRelations->getRelation('foo-bar'));
   }
 }

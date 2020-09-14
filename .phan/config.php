@@ -358,11 +358,7 @@ return [
   'directory_list' => [
     'src',
     'examples',
-    'vendor/guzzlehttp',
-    'vendor/illuminate/support',
-    'vendor/jenssegers/model',
-    'vendor/phan/phan/src/Phan',
-    'vendor/phpunit/phpunit/src',
+    'vendor',
   ],
 
   // A list of individual files to include in analysis

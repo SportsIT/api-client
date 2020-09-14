@@ -22,7 +22,7 @@ trait HasLinks {
    *
    * @return $this
    */
-  public function setLinks(Links $links) {
+  public function setLinks(Links $links = null) {
     $this->links = $links;
 
     return $this;

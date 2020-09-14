@@ -3,7 +3,6 @@
 namespace Dash;
 
 use Dash\Builders\IndexRequestBuilder;
-use Dash\Concerns\BuildsUris;
 use Dash\Concerns\MakesJsonApiRequests;
 use Dash\Exceptions\AuthException;
 use Dash\Exceptions\NotAuthenticatedException;
@@ -15,7 +14,6 @@ use Dash\Models\Item;
  * @mixin \GuzzleHttp\Client
  */
 class Client {
-  use BuildsUris;
   use MakesJsonApiRequests;
 
   const AUTH_GRANT_TYPE = 'client_credentials';

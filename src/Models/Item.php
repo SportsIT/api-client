@@ -201,8 +201,21 @@ class Item extends Model implements ItemInterface {
     return new DocumentFactory();
   }
 
-  protected function toDocument($withRelations = true): ItemDocumentInterface {
+  public function toDocument($withRelations = true): ItemDocumentInterface {
     return $this->getDocumentFactory()->make($this, $withRelations);
+  }
+
+  /**
+   * Find an item by its id.
+   *
+   * @param string|int $id
+   *
+   * @throws Exception
+   *
+   * @return ItemDocumentInterface
+   */
+  public function find($id): ItemDocumentInterface {
+    return $this->newBuilder()->one($id)->get();
   }
 
   /**
@@ -310,6 +323,13 @@ class Item extends Model implements ItemInterface {
     unset($this->attributes[$key]);
   }
 
+  /**
+   * Proxy all unknown method calls to a new IndexRequestBuilder
+   *
+   * @param $method
+   * @param $args
+   * @return mixed
+   */
   public function __call($method, $args) {
     return $this->newBuilder()->{$method}(...$args);
   }

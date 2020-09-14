@@ -2,6 +2,8 @@
 
 namespace Dash\Tests\Relations;
 
+use Dash\Concerns\HasRelations;
+use Dash\Interfaces\ItemInterface;
 use Dash\Models\Item;
 use Dash\Relations\HasOneRelation;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -9,58 +11,64 @@ use PHPUnit\Framework\TestCase;
 
 class HasOneTest extends TestCase {
   /**
+   * @var MockObject&ItemInterface
+   */
+  protected $parent;
+
+  protected function setUp(): void {
+    $this->parent = $this->createMock(ItemInterface::class);
+    parent::setUp();
+  }
+
+  /**
    * @test
    */
   public function it_can_associate_an_item_and_get_the_included() {
-    /** @var MockObject&HasOneRelation $mock */
-    $mock = $this->createMock(HasOneRelation::class);
+    $relation = new HasOneRelation($this->parent, 'test');
     $item = new Item();
 
-    $mock->associate($item);
+    $relation->associate($item);
 
-    $this->assertSame($item, $mock->getIncluded());
+    $this->assertSame($item, $relation->getIncluded());
   }
 
   /**
    * @test
    */
   public function it_can_dissociate_an_item() {
-    /** @var MockObject&HasOneRelation $mock */
-    $mock = $this->createMock(HasOneRelation::class);
+    $relation = new HasOneRelation($this->parent, 'test');
     $item = new Item();
 
-    $mock->associate($item);
-    $this->assertNotNull($mock->getIncluded());
+    $relation->associate($item);
+    $this->assertNotNull($relation->getIncluded());
 
-    $mock->dissociate();
+    $relation->dissociate();
 
-    $this->assertNull($mock->getIncluded());
+    $this->assertNull($relation->getIncluded());
   }
 
   /**
    * @test
    */
   public function it_returns_a_boolean_indicating_if_it_has_included() {
-    /** @var MockObject&HasOneRelation $mock */
-    $mock = $this->createMock(HasOneRelation::class);
+    $relation = new HasOneRelation($this->parent, 'test');
     $item = new Item();
 
-    $this->assertFalse($mock->hasIncluded());
-    $mock->associate($item);
+    $this->assertFalse($relation->hasIncluded());
+    $relation->associate($item);
 
-    $this->assertTrue($mock->hasIncluded());
+    $this->assertTrue($relation->hasIncluded());
   }
 
   /**
    * @test
    */
   public function it_can_set_and_get_omit_included() {
-    /** @var MockObject&HasOneRelation $mock */
-    $mock = $this->createMock(HasOneRelation::class);
+    $relation = new HasOneRelation($this->parent, 'test');
 
-    $this->assertFalse($mock->shouldOmitIncluded());
-    $mock->setOmitIncluded(true);
+    $this->assertFalse($relation->shouldOmitIncluded());
+    $relation->setOmitIncluded(true);
 
-    $this->assertTrue($mock->shouldOmitIncluded());
+    $this->assertTrue($relation->shouldOmitIncluded());
   }
 }

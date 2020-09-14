@@ -20,7 +20,7 @@ trait HasId {
    *
    * @return $this
    */
-  public function setId($id) {
+  public function setId($id = null) {
     $this->id = $id;
 
     return $this;

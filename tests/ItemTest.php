@@ -48,7 +48,7 @@ class ItemTest extends TestCase {
    * @test
    */
   public function is_does_not_show_attributes_in_to_json_api_array_when_it_has_no_attributes() {
-    $item = new Item(['testKey' => 'testValue']);
+    $item = new Item([]);
     $item->setType('testType');
     $item->setId('1234');
 
@@ -67,9 +67,9 @@ class ItemTest extends TestCase {
   public function is_adds_hasone_relation_in_to_json_api_array() {
     $item = Item::ofType('item-with-relationship');
     $item->setId('1234');
-    $item->hasOne('hasoneRelation')->associate(Item::ofType('related-item')->setId('5678'));
-    $item->hasOne('hasoneRelation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
-    $item->hasOne('hasoneRelation')->setMeta(new Meta(['foo' => 'bar']));
+    $item->hasOne('hasone_relation')->associate(Item::ofType('related-item')->setId('5678'));
+    $item->hasOne('hasone_relation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
+    $item->hasOne('hasone_relation')->setMeta(new Meta(['foo' => 'bar']));
 
     $this->assertSame(
       [
@@ -102,7 +102,7 @@ class ItemTest extends TestCase {
   public function is_adds_empty_hasone_relation_in_to_json_api_array() {
     $item = Item::ofType('item-with-relationship');
     $item->setId('1234');
-    $item->hasOne('hasoneRelation')->dissociate();
+    $item->hasOne('hasone_relation')->dissociate();
 
     $this->assertSame(
       [
@@ -124,9 +124,9 @@ class ItemTest extends TestCase {
   public function is_does_not_add_hasone_relation_without_data_in_to_json_api_array() {
     $item = Item::ofType('item-with-relationship');
     $item->setId('1234');
-    $item->hasOne('hasoneRelation');
-    $item->hasOne('hasoneRelation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
-    $item->hasOne('hasoneRelation')->setMeta(new Meta(['foo' => 'bar']));
+    $item->hasOne('hasone_relation');
+    $item->hasOne('hasone_relation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
+    $item->hasOne('hasone_relation')->setMeta(new Meta(['foo' => 'bar']));
 
     $this->assertSame(
       [
@@ -143,9 +143,9 @@ class ItemTest extends TestCase {
   public function is_adds_hasmany_relation_in_to_json_api_array() {
     $item = Item::ofType('item-with-relationship');
     $item->setId('1234');
-    $item->hasMany('hasmanyRelation')->associate(new Collection([Item::ofType('related-item')->setId('5678')]));
-    $item->hasMany('hasmanyRelation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
-    $item->hasMany('hasmanyRelation')->setMeta(new Meta(['foo' => 'bar']));
+    $item->hasMany('hasmany_relation')->associate(new Collection([Item::ofType('related-item')->setId('5678')]));
+    $item->hasMany('hasmany_relation')->setLinks(new Links(['self' => new Link('http://example.com/articles')]));
+    $item->hasMany('hasmany_relation')->setMeta(new Meta(['foo' => 'bar']));
 
     $this->assertSame(
       [
@@ -180,7 +180,7 @@ class ItemTest extends TestCase {
   public function is_adds_empty_hasmany_relation_in_to_json_api_array() {
     $item = Item::ofType('item-with-relationship');
     $item->setId('1234');
-    $item->hasMany('hasmanyRelation')->dissociate();
+    $item->hasMany('hasmany_relation')->dissociate();
 
     $this->assertSame(
       [

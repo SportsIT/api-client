@@ -14,7 +14,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function search($resourceType, $filters = [], $includes = [], $sort = null) {
-    return $this->client->get(static::buildIndexRequestUri($resourceType, $filters, $includes, $sort));
+    return $this->client->get(BuildsUris::buildIndexRequestUri($resourceType, $filters, $includes, $sort));
   }
 
   /**
@@ -29,7 +29,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function find($resourceType, $id, $filters = [], $includes = [], $sort = null) {
-    return $this->client->get(static::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort));
+    return $this->client->get(BuildsUris::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort));
   }
 
   /**
@@ -45,7 +45,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function getRelatedResources($resourceType, $id, $relationName, $filters = [], $includes = [], $sort = null) {
-    return $this->client->get(static::buildRelatedResourceRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
+    return $this->client->get(BuildsUris::buildRelatedResourceRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
   }
 
   /**
@@ -61,7 +61,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function getRelationship($resourceType, $id, $relationName, $filters = [], $includes = [], $sort = null) {
-    return $this->client->get(static::buildRelationshipRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
+    return $this->client->get(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
   }
 
   /**
@@ -76,7 +76,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function createResource($resourceType, $data, $filters = [], $includes = [], $sort = null) {
-    return $this->client->post(static::buildIndexRequestUri($resourceType, $filters, $includes, $sort), [
+    return $this->client->post(BuildsUris::buildIndexRequestUri($resourceType, $filters, $includes, $sort), [
       'json' => $data,
     ]);
   }
@@ -95,7 +95,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function updateResource($resourceType, $id, $data, $filters = [], $includes = [], $sort = null) {
-    return $this->client->patch(static::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort), [
+    return $this->client->patch(BuildsUris::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort), [
       'json' => $data,
     ]);
   }
@@ -109,7 +109,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function deleteResource($resourceType, $id) {
-    return $this->client->delete(static::buildResourceRequestUri($resourceType, $id));
+    return $this->client->delete(BuildsUris::buildResourceRequestUri($resourceType, $id));
   }
 
   /**
@@ -123,7 +123,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function appendToManyRelation($resourceType, $id, $relationName, $data) {
-    return $this->client->post(static::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+    return $this->client->post(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
       'json' => $data,
     ]);
   }
@@ -139,7 +139,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function replaceToManyRelation($resourceType, $id, $relationName, $data) {
-    return $this->client->patch(static::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+    return $this->client->patch(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
       'json' => $data,
     ]);
   }
@@ -155,7 +155,7 @@ trait MakesJsonApiRequests {
    * @return \Psr\Http\Message\ResponseInterface
    */
   public function deleteFromToManyRelation($resourceType, $id, $relationName, $data) {
-    return $this->client->delete(static::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+    return $this->client->delete(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
       'json' => $data,
     ]);
   }

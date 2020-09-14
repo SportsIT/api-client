@@ -7,7 +7,7 @@ use Dash\Models\Item;
 use Dash\Parsers\ResponseParser;
 use Dash\Responses\Document;
 use Dash\Responses\ItemDocument;
-use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Client;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -20,8 +20,8 @@ class DocumentClientTest extends TestCase {
     $response = $this->createMock(ResponseInterface::class);
     $document = new Document();
 
-    /** @var MockObject|ClientInterface $client */
-    $client = $this->createMock(ClientInterface::class);
+    /** @var MockObject|Client $client */
+    $client = $this->createMock(Client::class);
 
     $client->expects($this->once())
       ->method('get')
@@ -50,8 +50,8 @@ class DocumentClientTest extends TestCase {
     $response = $this->createMock(ResponseInterface::class);
     $document = new Document();
 
-    /** @var MockObject|ClientInterface $client */
-    $client = $this->createMock(ClientInterface::class);
+    /** @var MockObject|Client $client */
+    $client = $this->createMock(Client::class);
 
     $client->expects($this->once())
       ->method('delete')
@@ -82,8 +82,8 @@ class DocumentClientTest extends TestCase {
     $itemDocument = new ItemDocument();
     $itemDocument->setData((new Item())->setType('test')->setId('1'));
 
-    /** @var MockObject|ClientInterface $client */
-    $client = $this->createMock(ClientInterface::class);
+    /** @var MockObject|Client $client */
+    $client = $this->createMock(Client::class);
 
     $client->expects($this->once())
       ->method('patch')
@@ -114,8 +114,8 @@ class DocumentClientTest extends TestCase {
     $itemDocument = new ItemDocument();
     $itemDocument->setData((new Item())->setType('test'));
 
-    /** @var MockObject|ClientInterface $client */
-    $client = $this->createMock(ClientInterface::class);
+    /** @var MockObject|Client $client */
+    $client = $this->createMock(Client::class);
 
     $client->expects($this->once())
       ->method('post')

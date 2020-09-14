@@ -17,7 +17,7 @@ class CollectionParserTest extends TestCase {
     $itemParser = $this->createMock(ItemParser::class);
     $itemParser->expects($this->exactly(2))
       ->method('parse')
-      ->willReturn(new Item());
+      ->willReturn(Item::ofType('plain'));
 
     $parser = new CollectionParser($itemParser);
     $collection = $parser->parse($this->getResourceCollection());

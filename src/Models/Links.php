@@ -101,7 +101,7 @@ class Links implements ArrayAccess, Arrayable, Jsonable, JsonSerializable {
    */
   public function toArray() {
     return array_map(
-      static function (Link $link) {
+      static function (Link $link = null) {
         return $link ? $link->toArray() : null;
       },
       $this->links

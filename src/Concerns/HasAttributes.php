@@ -6,7 +6,7 @@ trait HasAttributes {
   /**
    * @var array
    */
-  protected $attributes;
+  protected $attributes = [];
 
   /**
    * @return array
@@ -15,15 +15,15 @@ trait HasAttributes {
     return $this->attributes;
   }
 
-  public function hasAttribute(string $name): bool {
+  public function hasAttribute($name): bool {
     return array_key_exists($name, $this->attributes);
   }
 
-  public function getAttribute(string $name) {
+  public function getAttribute($name) {
     return $this->attributes[$name] ?? null;
   }
 
-  public function setAttribute(string $name, $value) {
+  public function setAttribute($name, $value) {
     $this->attributes[$name] = $value;
 
     return $this;

@@ -1,4 +1,8 @@
 <?php
+
+use Dash\Client;
+use Dash\Configuration;
+
 require '../vendor/autoload.php';
 
 $clientID = '<replace with client ID>';
@@ -7,34 +11,22 @@ $companyCode = '<replace with company code>';
 
 $dateFormat = 'Y-m-d\TH:i:s';
 
-$config = new \Dash\Configuration($clientID, $clientSecret, $companyCode);
-$client = new \Dash\Client($config);
+$config = new Configuration($clientID, $clientSecret, $companyCode);
+$client = new Client($config);
 
 $targetDate = (new DateTime('now'))->setTime(0, 0, 0, 0);
 $nextDay = (clone $targetDate)->modify('+1 day');
 
-// get all payments made between the start of the target day and the start of the next day
-$filters = [
-    'date__gte' => $targetDate->format($dateFormat),
-    'date__lt' => $nextDay->format($dateFormat),
-];
-
-// include the facility and payment type relationships for all matching records
-$includes = [
-    'facility',
-    'paymentType',
-];
-
 // Call authenticate first to get an access token
-$response = $client->authenticate()
-    ->get(\Dash\Client::buildIndexRequestUri('payments', $filters, $includes));
+$client->authenticate();
 
+// get all payments made between the start of the target day and the start of the next day
 $response = $client
   ->resource('payments')
-  ->withFilter('date', \Dash\Utils\Filters::OPERATOR_GREATER_THAN_OR_EQUAL, $targetDate->format($dateFormat))
-  ->withFilter('date', \Dash\Utils\Filters::OPERATOR_LESS_THAN, $nextDay->format($dateFormat))
-  ->withIncludePaths('facility', 'paymentType')
+  ->where('date', \Dash\Utils\Filters::OPERATOR_GREATER_THAN_OR_EQUAL, $targetDate->format($dateFormat))
+  ->where('date', \Dash\Utils\Filters::OPERATOR_LESS_THAN, $nextDay->format($dateFormat))
+  // include the facility and payment type relationships for all matching records
+  ->including('facility', 'paymentType')
   ->search();
 
-// decode the json data to associative array
-$data = json_decode($response->getBody()->getContents(), true);
+$data = $response->getData();

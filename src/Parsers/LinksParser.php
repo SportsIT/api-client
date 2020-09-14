@@ -3,6 +3,7 @@
 namespace Dash\Parsers;
 
 use Dash\Exceptions\ValidationException;
+use Dash\Models\Collection;
 use Dash\Models\Link;
 use Dash\Models\Links;
 
@@ -47,13 +48,13 @@ class LinksParser {
       throw new ValidationException('Relationship links object MUST contain at least one of the following properties: `self`, `related`.');
     }
 
-    $links = [];
-
-    foreach ($data as $name => $link) {
-      $links[] = $this->buildLink($link, $name);
-    }
-
-    return new Links($links);
+    return new Links(
+      Collection::wrap((array) $data)
+        ->map(function ($link, $name) {
+          return $this->buildLink($link, $name);
+        })
+        ->toArray()
+    );
   }
 
   /**

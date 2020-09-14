@@ -79,7 +79,7 @@ class Document implements \JsonSerializable, DocumentInterface {
   }
 
   public function hasErrors(): bool {
-    return !empty($this->errors);
+    return $this->errors->isNotEmpty();
   }
 
   public function getErrors(): ErrorCollection {
@@ -156,15 +156,6 @@ class Document implements \JsonSerializable, DocumentInterface {
   }
 
   /**
-   * {@inheritdoc}
-   *
-   * @return object
-   */
-  public function jsonSerialize() {
-    return (object) $this->toArray();
-  }
-
-  /**
    * @return array
    */
   public function toArray(): array {
@@ -195,5 +186,40 @@ class Document implements \JsonSerializable, DocumentInterface {
     }
 
     return $document;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @return object
+   */
+  public function jsonSerialize() {
+    $document = [];
+
+    if ($this->getLinks() !== null) {
+      $document['links'] = $this->getLinks();
+    }
+
+    if ($this->getData() !== null) {
+      $document['data'] = $this->data->toJsonApiArray();
+    }
+
+    if ($this->getIncluded()->isNotEmpty()) {
+      $document['included'] = $this->getIncluded()->toJsonApiArray();
+    }
+
+    if ($this->getMeta() !== null) {
+      $document['meta'] = $this->getMeta();
+    }
+
+    if ($this->hasErrors()) {
+      $document['errors'] = $this->getErrors();
+    }
+
+    if ($this->getJsonapi() !== null) {
+      $document['jsonapi'] = $this->getJsonapi();
+    }
+
+    return (object) $document;
   }
 }

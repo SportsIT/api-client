@@ -2,6 +2,7 @@
 
 namespace Dash\Tests\Relations;
 
+use Dash\Interfaces\ItemInterface;
 use Dash\Models\Collection;
 use Dash\Models\Item;
 use Dash\Relations\HasManyRelation;
@@ -10,67 +11,72 @@ use PHPUnit\Framework\TestCase;
 
 class HasManyTest extends TestCase {
   /**
+   * @var MockObject&ItemInterface
+   */
+  protected $parent;
+
+  protected function setUp(): void {
+    $this->parent = $this->createMock(ItemInterface::class);
+    parent::setUp();
+  }
+
+  /**
    * @test
    */
   public function it_can_associate_a_collection_and_get_the_included() {
-    /** @var MockObject&HasManyRelation $mock */
-    $mock = $this->createMock(HasManyRelation::class);
+    $relation = new HasManyRelation($this->parent, 'test');
     $collection = new Collection([new Item()]);
 
-    $mock->associate($collection);
+    $relation->associate($collection);
 
-    $this->assertSame($collection, $mock->getIncluded());
+    $this->assertSame($collection, $relation->getIncluded());
   }
 
   /**
    * @test
    */
   public function it_can_dissociate_a_collection() {
-    /** @var MockObject&HasManyRelation $mock */
-    $mock = $this->createMock(HasManyRelation::class);
+    $relation = new HasManyRelation($this->parent, 'test');
     $collection = new Collection([new Item()]);
 
-    $mock->associate($collection);
-    $this->assertNotNull($mock->getIncluded());
+    $relation->associate($collection);
+    $this->assertNotNull($relation->getIncluded());
 
-    $mock->dissociate();
+    $relation->dissociate();
 
-    $this->assertEquals($mock->getIncluded(), new Collection());
+    $this->assertEquals($relation->getIncluded(), new Collection());
   }
 
   /**
    * @test
    */
   public function it_returns_a_boolean_indicating_if_it_has_included() {
-    /** @var MockObject&HasManyRelation $mock */
-    $mock = $this->createMock(HasManyRelation::class);
+    $relation = new HasManyRelation($this->parent, 'test');
     $collection = new Collection([new Item()]);
 
-    $this->assertFalse($mock->hasIncluded());
-    $mock->associate($collection);
+    $this->assertFalse($relation->hasIncluded());
+    $relation->associate($collection);
 
-    $this->assertTrue($mock->hasIncluded());
+    $this->assertTrue($relation->hasIncluded());
   }
 
   /**
    * @test
    */
   public function it_can_set_and_get_omit_included() {
-    /** @var MockObject&HasManyRelation $mock */
-    $mock = $this->createMock(HasManyRelation::class);
+    $relation = new HasManyRelation($this->parent, 'test');
 
-    $this->assertFalse($mock->shouldOmitIncluded());
-    $mock->setOmitIncluded(true);
+    $this->assertFalse($relation->shouldOmitIncluded());
+    $relation->setOmitIncluded(true);
 
-    $this->assertTrue($mock->shouldOmitIncluded());
+    $this->assertTrue($relation->shouldOmitIncluded());
   }
 
   /**
    * @test
    */
   public function it_can_sort_the_included() {
-    /** @var MockObject&HasManyRelation $mock */
-    $mock = $this->createMock(HasManyRelation::class);
+    $relation = new HasManyRelation($this->parent, 'test');
     /** @var MockObject&Collection $collectionMock */
     $collectionMock = $this->createMock(Collection::class);
 
@@ -78,8 +84,8 @@ class HasManyTest extends TestCase {
       ->method('sortBy')
       ->with('foo', SORT_NATURAL, true);
 
-    $mock->associate($collectionMock);
+    $relation->associate($collectionMock);
 
-    $mock->sortBy('foo', SORT_NATURAL, true);
+    $relation->sortBy('foo', SORT_NATURAL, true);
   }
 }
