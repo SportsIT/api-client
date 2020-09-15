@@ -2,11 +2,9 @@
 
 namespace Dash\Relations;
 
-use Dash\Builders\BaseRelatedRequestBuilder;
-use Dash\Builders\BaseRelationshipRequestBuilder;
+use Dash\Builders\BaseRelationRequestBuilder;
 use Dash\Concerns\HasLinks;
 use Dash\Concerns\HasMeta;
-use Dash\Concerns\HasRelations;
 use Dash\Interfaces\DataInterface;
 use Dash\Interfaces\DocumentInterface;
 use Dash\Interfaces\ItemInterface;
@@ -40,7 +38,7 @@ abstract class AbstractRelation {
    * AbstractRelation constructor.
    *
    * @param ItemInterface $parent
-   * @param string       $relationName
+   * @param string        $relationName
    */
   public function __construct(ItemInterface $parent, string $relationName) {
     $this->parent = $parent;
@@ -48,14 +46,9 @@ abstract class AbstractRelation {
   }
 
   /**
-   * @return BaseRelatedRequestBuilder
+   * @return BaseRelationRequestBuilder
    */
-  abstract public function newRelatedBuilder(): BaseRelatedRequestBuilder;
-
-  /**
-   * @return BaseRelationshipRequestBuilder
-   */
-  abstract public function newRelationshipBuilder(): BaseRelationshipRequestBuilder;
+  abstract public function newRelatedBuilder(): BaseRelationRequestBuilder;
 
   abstract protected function toDocument(): DocumentInterface;
 

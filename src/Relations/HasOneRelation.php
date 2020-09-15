@@ -2,10 +2,8 @@
 
 namespace Dash\Relations;
 
-use Dash\Builders\BaseRelatedRequestBuilder;
-use Dash\Builders\BaseRelationshipRequestBuilder;
+use Dash\Builders\BaseRelationRequestBuilder;
 use Dash\Builders\OneRelatedRequestBuilder;
-use Dash\Builders\OneRelationshipRequestBuilder;
 use Dash\Interfaces\DocumentInterface;
 use Dash\Interfaces\ItemInterface;
 use Dash\Responses\ItemDocument;
@@ -36,7 +34,7 @@ class HasOneRelation extends AbstractRelation {
   }
 
   /**
-   * Save the current state of the relation
+   * Save the current state of the relation.
    *
    * @throws Exception
    *
@@ -55,25 +53,12 @@ class HasOneRelation extends AbstractRelation {
    *
    * @return OneRelatedRequestBuilder
    */
-  public function newRelatedBuilder(): BaseRelatedRequestBuilder {
+  public function newRelatedBuilder(): BaseRelationRequestBuilder {
     if ($this->parent->isNew()) {
       throw new Exception('Cannot interact with relation if parent does not exist');
     }
 
     return $this->parent->newBuilder()->one($this->parent->getId())->oneRelated($this->relationName);
-  }
-
-  /**
-   * @throws Exception
-   *
-   * @return OneRelationshipRequestBuilder
-   */
-  public function newRelationshipBuilder(): BaseRelationshipRequestBuilder {
-    if ($this->parent->isNew()) {
-      throw new Exception('Cannot interact with relation if parent does not exist');
-    }
-
-    return $this->parent->newBuilder()->one($this->parent->getId())->oneRelationship($this->relationName);
   }
 
   /**

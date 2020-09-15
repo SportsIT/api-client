@@ -5,7 +5,7 @@ use Dash\Configuration;
 use Dash\Models\Item;
 use Dash\Utils\Filters;
 
-require '../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
 $clientID = '<replace with client ID>';
 $clientSecret = '<replace with client secret>';
@@ -30,7 +30,7 @@ $document = Item::ofType('events')
     ['start', Filters::OPERATOR_LESS_THAN, $nextDay->format($dateFormat)],
   ])
   // individual filters can be added as well
-  ->where('event_type', 'g') // defaults to '=' operator when using 2 parameters
+  ->where('eventType.id', 'g') // defaults to '=' operator when using 2 parameters
   // include the home and visiting team relationships for all matching records
   ->including([
     'homeTeam',

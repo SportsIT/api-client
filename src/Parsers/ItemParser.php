@@ -117,6 +117,11 @@ class ItemParser {
       }
 
       if (!is_object($relationship)) {
+        // relationship is not included but shown as empty
+        if (is_array($relationship) && count($relationship) === 0) {
+          continue;
+        }
+
         throw new ValidationException(sprintf('Relationship MUST be an object, "%s" given.', gettype($relationship)));
       }
 

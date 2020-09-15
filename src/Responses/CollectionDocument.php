@@ -2,9 +2,9 @@
 
 namespace Dash\Responses;
 
-use Dash\Builders\BaseRelationRequestBuilder;
 use Dash\Builders\BaseRequestBuilder;
 use Dash\Builders\IndexRequestBuilder;
+use Dash\Builders\ManyRelatedRequestBuilder;
 use Dash\Interfaces\CollectionDocumentInterface;
 use Dash\Models\Collection;
 
@@ -15,27 +15,27 @@ class CollectionDocument extends Document implements CollectionDocumentInterface
   protected $data;
 
   public function currentPageNumber(): int {
-    return $this->getMeta()['page']['current-page'];
+    return $this->getMeta()['page']->{'current-page'};
   }
 
   public function lastPageNumber(): int {
-    return $this->getMeta()['page']['last-page'];
+    return $this->getMeta()['page']->{'last-page'};
   }
 
   public function itemsPerPage(): int {
-    return $this->getMeta()['page']['per-page'];
+    return $this->getMeta()['page']->{'per-page'};
   }
 
-  public function fromIndex(): int {
-    return $this->getMeta()['page']['from'];
+  public function fromIndex(): ?int {
+    return $this->getMeta()['page']->{'from'};
   }
 
-  public function toIndex(): int {
-    return $this->getMeta()['page']['to'];
+  public function toIndex(): ?int {
+    return $this->getMeta()['page']->{'to'};
   }
 
   public function totalItems(): int {
-    return $this->getMeta()['page']['total'];
+    return $this->getMeta()['page']->{'total'};
   }
 
   /**
@@ -46,7 +46,7 @@ class CollectionDocument extends Document implements CollectionDocumentInterface
   }
 
   /**
-   * @return IndexRequestBuilder|BaseRelationRequestBuilder
+   * @return IndexRequestBuilder|ManyRelatedRequestBuilder
    */
   public function getRequest(): BaseRequestBuilder {
     return parent::getRequest();

@@ -4,7 +4,7 @@ use Dash\Client;
 use Dash\Configuration;
 use Dash\Models\Item;
 
-require '../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
 $clientID = '<replace with client ID>';
 $clientSecret = '<replace with client secret>';

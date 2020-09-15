@@ -60,28 +60,6 @@ class SingleResourceRequestBuilder extends BaseRequestBuilder {
   }
 
   /**
-   * Get a builder to access related identifiers for a given has-one relationship.
-   *
-   * @param string $relationshipName
-   *
-   * @return OneRelationshipRequestBuilder
-   */
-  public function oneRelationship(string $relationshipName): OneRelationshipRequestBuilder {
-    return new OneRelationshipRequestBuilder(clone $this, $relationshipName);
-  }
-
-  /**
-   * Get a builder to access related identifiers for a given has-one relationship.
-   *
-   * @param string $relationshipName
-   *
-   * @return ManyRelationshipRequestBuilder
-   */
-  public function manyRelationship(string $relationshipName): ManyRelationshipRequestBuilder {
-    return new ManyRelationshipRequestBuilder(clone $this, $relationshipName);
-  }
-
-  /**
    * Performs a get on the current resource.
    *
    * @throws \Exception

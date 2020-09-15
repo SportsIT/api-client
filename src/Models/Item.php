@@ -179,14 +179,26 @@ class Item extends Model implements ItemInterface {
     return new IndexRequestBuilder(static::getDocumentClient(), $this->getType());
   }
 
+  /**
+   * Get an instance of Item of the given type.
+   *
+   * @param string $resourceType
+   * @return Item
+   */
   public static function ofType(string $resourceType) {
     return (new static())->setType($resourceType);
   }
 
+  /**
+   * @param DocumentClient $client
+   */
   public static function setDocumentClient(DocumentClient $client) {
     static::$documentClient = $client;
   }
 
+  /**
+   * @return DocumentClient|null
+   */
   public static function getDocumentClient() {
     // if the document client hasn't been set by the Client yet, we'll just build
     // an unauthenticated document client for now
@@ -197,10 +209,18 @@ class Item extends Model implements ItemInterface {
     return static::$documentClient;
   }
 
+  /**
+   * @return DocumentFactory
+   */
   public function getDocumentFactory() {
     return new DocumentFactory();
   }
 
+  /**
+   * @param bool $withRelations
+   *
+   * @return ItemDocumentInterface
+   */
   public function toDocument($withRelations = true): ItemDocumentInterface {
     return $this->getDocumentFactory()->make($this, $withRelations);
   }
@@ -219,6 +239,8 @@ class Item extends Model implements ItemInterface {
   }
 
   /**
+   * Save the item to the API, either performing a create or update.
+   *
    * @throws Exception
    *
    * @return ItemDocumentInterface
@@ -232,6 +254,9 @@ class Item extends Model implements ItemInterface {
   }
 
   /**
+   * Save the item and it's relations to the API, either performing a create or update.
+   * Note that ALL relations saved this way perform a full replace!
+   *
    * @throws Exception
    *
    * @return ItemDocumentInterface
@@ -242,6 +267,21 @@ class Item extends Model implements ItemInterface {
     }
 
     return $this->performCreate(true);
+  }
+
+  /**
+   * Delete the item from the API.
+   *
+   * @throws Exception
+   *
+   * @return \Dash\Interfaces\DocumentInterface|null
+   */
+  public function delete() {
+    if ($this->isNew()) {
+      return null;
+    }
+
+    return $this->newBuilder()->one($this->getId())->delete();
   }
 
   /**
@@ -324,10 +364,11 @@ class Item extends Model implements ItemInterface {
   }
 
   /**
-   * Proxy all unknown method calls to a new IndexRequestBuilder
+   * Proxy all unknown method calls to a new IndexRequestBuilder.
    *
    * @param $method
    * @param $args
+   *
    * @return mixed
    */
   public function __call($method, $args) {

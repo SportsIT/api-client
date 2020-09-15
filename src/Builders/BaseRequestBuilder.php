@@ -92,10 +92,10 @@ abstract class BaseRequestBuilder {
     return retry($this->tries, function () use ($method, $body) {
       switch ($method) {
         case 'get':
-          return $this->getClient()->get($this->getUri(), $this->getParameters()->toArray());
+          return $this->getClient()->get($this->getUri(), $this->getParameters()->toArray())->setRequest($this);
 
         default:
-          return $this->getClient()->{$method}($this->getUri(), $body, $this->getParameters()->toArray());
+          return $this->getClient()->{$method}($this->getUri(), $body, $this->getParameters()->toArray())->setRequest($this);
       }
     }, $this->retryDelay);
   }

@@ -15,7 +15,7 @@ trait HasFilters {
   public function getFilters(): array {
     $filters = [];
 
-    foreach ($this->getFilters() as $field => $filter) {
+    foreach ($this->filters as $field => $filter) {
       if ($filter instanceof Arrayable) {
         $filters[$field] = $filter->toArray();
       } else {
@@ -71,6 +71,14 @@ trait HasFilters {
       return $this;
     }
 
+    list($operator, $value) = $this->resolveFilterOptions($operator, $value);
+
+    $this->filters[$this->getFilterKey($field, $operator)] = $this->resolveFilterValue($operator, $value);
+
+    return $this;
+  }
+
+  protected function resolveFilterOptions($operator, $value) {
     if (!isset($operator)) {
       throw new \InvalidArgumentException('Operator must be set when not passing in a FilterGroup object or array');
     }
@@ -85,6 +93,14 @@ trait HasFilters {
       throw new \InvalidArgumentException("Invalid operator: {$operator}");
     }
 
+    return [$operator, $value];
+  }
+
+  protected function getFilterKey($fieldName, $operator) {
+    return "{$fieldName}{$operator}";
+  }
+
+  protected function resolveFilterValue($operator, $value) {
     switch ($operator) {
       case Filters::OPERATOR_IS_NULL:
       case Filters::OPERATOR_IS_NOT_NULL:
@@ -97,8 +113,6 @@ trait HasFilters {
         break;
     }
 
-    $this->filters["{$field}{$operator}"] = $value;
-
-    return $this;
+    return $value;
   }
 }

@@ -2,10 +2,8 @@
 
 namespace Dash\Relations;
 
-use Dash\Builders\BaseRelatedRequestBuilder;
-use Dash\Builders\BaseRelationshipRequestBuilder;
+use Dash\Builders\BaseRelationRequestBuilder;
 use Dash\Builders\ManyRelatedRequestBuilder;
-use Dash\Builders\ManyRelationshipRequestBuilder;
 use Dash\Interfaces\DocumentInterface;
 use Dash\Models\Collection;
 use Dash\Responses\CollectionDocument;
@@ -103,25 +101,12 @@ class HasManyRelation extends AbstractRelation {
    *
    * @return ManyRelatedRequestBuilder
    */
-  public function newRelatedBuilder(): BaseRelatedRequestBuilder {
+  public function newRelatedBuilder(): BaseRelationRequestBuilder {
     if ($this->parent->isNew()) {
       throw new Exception('Cannot interact with relation if parent does not exist');
     }
 
     return $this->parent->newBuilder()->one($this->parent->getId())->manyRelated($this->relationName);
-  }
-
-  /**
-   * @throws Exception
-   *
-   * @return ManyRelationshipRequestBuilder
-   */
-  public function newRelationshipBuilder(): BaseRelationshipRequestBuilder {
-    if ($this->parent->isNew()) {
-      throw new Exception('Cannot interact with relation if parent does not exist');
-    }
-
-    return $this->parent->newBuilder()->one($this->parent->getId())->manyRelationship($this->relationName);
   }
 
   /**
