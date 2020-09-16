@@ -2,6 +2,7 @@
 
 namespace Dash\Interfaces;
 
+use Dash\Builders\BaseRequestBuilder;
 use Dash\Models\Collection;
 use Dash\Models\ErrorCollection;
 use Dash\Models\JsonApi;
@@ -11,16 +12,27 @@ use Psr\Http\Message\ResponseInterface;
 
 interface DocumentInterface {
   /**
+   * @return BaseRequestBuilder|null
+   */
+  public function getRequest(): ?BaseRequestBuilder;
+
+  /**
+   * @param BaseRequestBuilder|null $request
+   * @return $this
+   */
+  public function setRequest(?BaseRequestBuilder $request);
+
+  /**
    * @return \Psr\Http\Message\ResponseInterface|null
    */
-  public function getResponse();
+  public function getResponse(): ?ResponseInterface;
 
   /**
    * @param \Psr\Http\Message\ResponseInterface|null $response
    *
    * @return $this
    */
-  public function setResponse(ResponseInterface $response);
+  public function setResponse(?ResponseInterface $response);
 
   /**
    * @return DataInterface
@@ -54,26 +66,26 @@ interface DocumentInterface {
   /**
    * @return Meta|null
    */
-  public function getMeta();
+  public function getMeta(): ?Meta;
 
   /**
    * @param Meta|null $meta
    *
    * @return $this
    */
-  public function setMeta(Meta $meta = null);
+  public function setMeta(?Meta $meta);
 
   /**
    * @return Links|null
    */
-  public function getLinks();
+  public function getLinks(): ?Links;
 
   /**
    * @param Links|null $links
    *
    * @return $this
    */
-  public function setLinks(Links $links = null);
+  public function setLinks(?Links $links);
 
   /**
    * @return Collection
@@ -90,14 +102,14 @@ interface DocumentInterface {
   /**
    * @return Jsonapi|null
    */
-  public function getJsonapi();
+  public function getJsonapi(): ?JsonApi;
 
   /**
    * @param JsonApi|null $jsonapi
    *
    * @return $this
    */
-  public function setJsonapi(Jsonapi $jsonapi = null);
+  public function setJsonapi(?Jsonapi $jsonapi);
 
   /**
    * @return array

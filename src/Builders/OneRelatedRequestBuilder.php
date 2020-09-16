@@ -3,7 +3,6 @@
 namespace Dash\Builders;
 
 use Dash\Interfaces\ItemDocumentInterface;
-use Dash\Responses\Document;
 use Dash\Responses\ItemDocument;
 
 class OneRelatedRequestBuilder extends BaseRelationRequestBuilder {
@@ -39,6 +38,6 @@ class OneRelatedRequestBuilder extends BaseRelationRequestBuilder {
    * @return ItemDocumentInterface
    */
   public function dissociate(): ItemDocumentInterface {
-    return $this->request('patch', (new Document())->setData(null));
+    return $this->request('patch', new ItemDocument());
   }
 }

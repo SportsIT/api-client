@@ -45,6 +45,7 @@ class HasOneRelation extends AbstractRelation {
       return $this->newRelatedBuilder()->dissociate();
     }
 
+    // @phan-suppress-next-line PhanTypeMismatchArgument
     return $this->newRelatedBuilder()->associate($this->toDocument());
   }
 

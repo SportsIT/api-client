@@ -67,6 +67,7 @@ class HasManyRelation extends AbstractRelation {
       return null;
     }
 
+    // @phan-suppress-next-line PhanTypeMismatchArgument
     return $this->newRelatedBuilder()->add($this->toDocument());
   }
 
@@ -82,6 +83,7 @@ class HasManyRelation extends AbstractRelation {
       return null;
     }
 
+    // @phan-suppress-next-line PhanTypeMismatchArgument
     return $this->newRelatedBuilder()->replace($this->toDocument());
   }
 

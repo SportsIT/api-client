@@ -11,7 +11,7 @@ interface ItemInterface extends DataInterface {
   /**
    * @return string|null
    */
-  public function getId();
+  public function getId(): ?string;
 
   /**
    * @return bool
@@ -28,7 +28,7 @@ interface ItemInterface extends DataInterface {
    *
    * @return $this
    */
-  public function setId(string $id = null);
+  public function setId(?string $id);
 
   /**
    * @return string
@@ -52,24 +52,24 @@ interface ItemInterface extends DataInterface {
    *
    * @return $this
    */
-  public function setLinks(Links $links = null);
+  public function setLinks(?Links $links);
 
   /**
    * @return Links|null
    */
-  public function getLinks();
+  public function getLinks(): ?Links;
 
   /**
    * @param Meta|null $meta
    *
    * @return $this
    */
-  public function setMeta(Meta $meta = null);
+  public function setMeta(?Meta $meta);
 
   /**
    * @return Meta|null
    */
-  public function getMeta();
+  public function getMeta(): ?Meta;
 
   /**
    * @param array $attributes

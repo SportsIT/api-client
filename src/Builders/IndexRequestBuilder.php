@@ -2,7 +2,6 @@
 
 namespace Dash\Builders;
 
-use Dash\Interfaces\DocumentInterface;
 use Dash\Interfaces\ItemDocumentInterface;
 use Dash\Responses\CollectionDocument;
 

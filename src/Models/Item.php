@@ -296,7 +296,7 @@ class Item extends Model implements ItemInterface {
   }
 
   /**
-   * @param false $withRelations
+   * @param bool $withRelations
    *
    * @throws Exception
    *

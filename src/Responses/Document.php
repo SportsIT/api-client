@@ -20,7 +20,7 @@ class Document implements \JsonSerializable, DocumentInterface {
   use HasMeta;
 
   /**
-   * @var BaseRequestBuilder
+   * @var BaseRequestBuilder|null
    */
   protected $originalRequest;
 
@@ -46,18 +46,18 @@ class Document implements \JsonSerializable, DocumentInterface {
   }
 
   /**
-   * @return BaseRequestBuilder
+   * @return BaseRequestBuilder|null
    */
-  public function getRequest(): BaseRequestBuilder {
+  public function getRequest(): ?BaseRequestBuilder {
     return $this->originalRequest;
   }
 
   /**
-   * @param BaseRequestBuilder $request
+   * @param BaseRequestBuilder|null $request
    *
    * @return $this
    */
-  public function setRequest(BaseRequestBuilder $request) {
+  public function setRequest(?BaseRequestBuilder $request) {
     $this->originalRequest = $request;
 
     return $this;
@@ -122,7 +122,7 @@ class Document implements \JsonSerializable, DocumentInterface {
   /**
    * @return ResponseInterface|null
    */
-  public function getResponse(): ResponseInterface {
+  public function getResponse(): ?ResponseInterface {
     return $this->response;
   }
 
@@ -131,7 +131,7 @@ class Document implements \JsonSerializable, DocumentInterface {
    *
    * @return $this
    */
-  public function setResponse(ResponseInterface $response) {
+  public function setResponse(?ResponseInterface $response) {
     $this->response = $response;
 
     return $this;
@@ -140,7 +140,7 @@ class Document implements \JsonSerializable, DocumentInterface {
   /**
    * @return JsonApi|null
    */
-  public function getJsonapi() {
+  public function getJsonapi(): ?JsonApi {
     return $this->jsonapi;
   }
 
@@ -149,7 +149,7 @@ class Document implements \JsonSerializable, DocumentInterface {
    *
    * @return $this
    */
-  public function setJsonapi(JsonApi $jsonapi = null) {
+  public function setJsonapi(?JsonApi $jsonapi) {
     $this->jsonapi = $jsonapi;
 
     return $this;

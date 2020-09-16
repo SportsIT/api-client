@@ -7,8 +7,6 @@ use Dash\Interfaces\DataInterface;
 use Dash\Interfaces\DocumentInterface;
 use Dash\Interfaces\ItemInterface;
 use Dash\Models\Collection;
-use Dash\Relations\HasManyRelation;
-use Dash\Relations\HasOneRelation;
 use Dash\Responses\CollectionDocument;
 use Dash\Responses\ItemDocument;
 
@@ -64,13 +62,13 @@ class DocumentFactory {
     return Collection::make($item->getRelations())
       ->reject(
         static function ($relationship) {
-          /* @var HasOneRelation|HasManyRelation $relationship */
+          /* @var \Dash\Relations\HasOneRelation|\Dash\Relations\HasManyRelation $relationship */
           return $relationship->shouldOmitIncluded() || !$relationship->hasIncluded();
         }
       )
       ->flatMap(
         static function ($relationship) {
-          /* @var HasOneRelation|HasManyRelation $relationship */
+          /* @var \Dash\Relations\HasOneRelation|\Dash\Relations\HasManyRelation $relationship */
           return Collection::wrap($relationship->getIncluded());
         }
       )

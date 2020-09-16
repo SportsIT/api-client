@@ -300,7 +300,7 @@ class ItemParserTest extends TestCase {
       [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": 1.5}}', false)],
       [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": false}}', false)],
       [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": null}}', false)],
-      [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": []}}', false)],
+      [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": ["foo"]}}', false)],
       [json_decode('{"id": "foo", "type": "foo", "relationships": {"foo": "foo"}}', false)],
     ];
   }

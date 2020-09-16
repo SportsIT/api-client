@@ -21,11 +21,6 @@ abstract class BaseRequestBuilder {
   protected $resourceType;
 
   /**
-   * @var Parameters
-   */
-  protected $parameters;
-
-  /**
    * The number of times to try the request.
    *
    * @var int

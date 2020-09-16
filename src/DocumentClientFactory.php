@@ -18,7 +18,7 @@ class DocumentClientFactory {
    *
    * @return DocumentClient
    */
-  public function make($accessToken = null): DocumentClient {
+  public function make(?string $accessToken = null): DocumentClient {
     return new DocumentClient((new GuzzleFactory())->make($accessToken), new ResponseParser($this->buildDocumentParser()));
   }
 

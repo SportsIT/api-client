@@ -1,8 +1,8 @@
 <?php
 
-namespace Dash\Concerns;
+namespace Dash\Utils;
 
-trait BuildsUris {
+class BuildsUris {
   /**
    * Build the URI for an index request.
    *
@@ -69,54 +69,27 @@ trait BuildsUris {
    *
    * @param array $filters
    * @param array $includes
-   * @param null  $sort
+   * @param string|null  $sort
    *
    * @return string
    */
   protected static function buildQueryParameters($filters = [], $includes = [], $sort = null) {
-    $query = '';
+    $params = [];
 
     if (!empty($filters)) {
-      $filtersStr = '';
-
       foreach ($filters as $key => $value) {
-        $filtersStr = static::addParameterSeparator($filtersStr)."filter[{$key}]={$value}";
+        $params["filter[{$key}]"] = $value;
       }
-
-      $query = "?{$filtersStr}";
     }
 
     if (!empty($includes)) {
-      $includeStr = '';
-
-      foreach ($includes as $include) {
-        $includeStr = static::addParameterSeparator($includeStr, 'include=', ',').$include;
-      }
-
-      $query = static::addParameterSeparator($query, '?').$includeStr;
+      $params['include'] = implode(',', $includes);
     }
 
     if (isset($sort)) {
-      $query = static::addParameterSeparator($query, '?').$sort;
+      $params['sort'] = $sort;
     }
 
-    return $query;
-  }
-
-  /**
-   * @param string $str
-   * @param string $empty
-   * @param string $else
-   *
-   * @return string
-   */
-  protected static function addParameterSeparator($str, $empty = '', $else = '&') {
-    if ($str === '') {
-      $str .= $empty;
-    } else {
-      $str .= $else;
-    }
-
-    return $str;
+    return http_build_query($params);
   }
 }

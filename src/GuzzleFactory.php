@@ -2,8 +2,6 @@
 
 namespace Dash;
 
-use GuzzleHttp\ClientInterface;
-
 class GuzzleFactory {
   const API_BASE_URL = 'https://api.dashplatform.com/v1/';
 
@@ -14,9 +12,9 @@ class GuzzleFactory {
   /**
    * @param string|null $accessToken
    *
-   * @return ClientInterface
+   * @return \GuzzleHttp\Client
    */
-  public function make($accessToken = null): ClientInterface {
+  public function make(?string $accessToken = null): \GuzzleHttp\Client {
     return new \GuzzleHttp\Client($this->buildGuzzleConfig($accessToken));
   }
 
@@ -27,7 +25,7 @@ class GuzzleFactory {
    *
    * @return array
    */
-  protected function buildGuzzleConfig($accessToken = null) {
+  protected function buildGuzzleConfig(?string $accessToken): array {
     return [
       'base_uri' => static::API_BASE_URL,
       'headers' => $this->getDefaultHeaders($accessToken),
@@ -39,8 +37,9 @@ class GuzzleFactory {
    *
    * @return array
    */
-  protected function getDefaultHeaders($accessToken = null): array {
+  protected function getDefaultHeaders(?string $accessToken): array {
     return array_filter([
+      // @phan-suppress-next-line PhanDeprecatedClassConstant
       'User-Agent' => sprintf(static::USERAGENT_FORMAT, Client::VERSION, phpversion(), \GuzzleHttp\Client::VERSION),
       'Content-Type' => static::JSONAPI_CONTENT_TYPE,
       'Accept' => static::JSONAPI_CONTENT_TYPE,

@@ -13,7 +13,7 @@ trait HasMeta {
   /**
    * @return Meta|null
    */
-  public function getMeta() {
+  public function getMeta(): ?Meta {
     return $this->meta;
   }
 
@@ -22,7 +22,7 @@ trait HasMeta {
    *
    * @return $this
    */
-  public function setMeta(Meta $meta = null) {
+  public function setMeta(?Meta $meta) {
     $this->meta = $meta;
 
     return $this;

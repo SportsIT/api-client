@@ -8,6 +8,11 @@ use Dash\Utils\SortDirections;
 
 trait HasQueryParameters {
   /**
+   * @var Parameters
+   */
+  protected $parameters;
+
+  /**
    * @return Parameters
    */
   public function getParameters() {

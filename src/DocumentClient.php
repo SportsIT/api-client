@@ -4,12 +4,11 @@ namespace Dash;
 
 use Dash\Interfaces\DocumentInterface;
 use Dash\Parsers\ResponseParser;
-use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class DocumentClient {
   /**
-   * @var ClientInterface
+   * @var \GuzzleHttp\Client
    */
   private $client;
 
@@ -19,10 +18,10 @@ class DocumentClient {
   private $parser;
 
   /**
-   * @param ClientInterface $client
+   * @param \GuzzleHttp\Client $client
    * @param ResponseParser  $parser
    */
-  public function __construct(ClientInterface $client, ResponseParser $parser) {
+  public function __construct(\GuzzleHttp\Client $client, ResponseParser $parser) {
     $this->client = $client;
     $this->parser = $parser;
   }
