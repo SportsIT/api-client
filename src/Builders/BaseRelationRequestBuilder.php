@@ -49,6 +49,6 @@ abstract class BaseRelationRequestBuilder extends BaseRequestBuilder {
   }
 
   public function getUri(): string {
-    return $this->single->getUri(). ($this->isIdentifiersOnly() ? '/relationships' : '') . "/{$this->relationshipName}";
+    return $this->single->getUri().($this->isIdentifiersOnly() ? '/relationships' : '')."/{$this->relationshipName}";
   }
 }
