@@ -42,17 +42,8 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
-      - name: Check Style Push
-        if: github.event.pull_request == null
-        env:
-          COMMIT_RANGE: ${{ github.event.before }}...${{ github.event.after }}
-        run: sudo ./.github/phpcs.sh
-
-      - name: Check Style Pull Request
-        if: github.event.pull_request != null
-        env:
-          COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
-        run: sudo ./.github/phpcs.sh
+      - name: Check Style
+        run: vendor/bin/php-cs-fixer
 
       - name: Run Phan
         env:
