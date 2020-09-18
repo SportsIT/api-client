@@ -1,8 +1,12 @@
-### Dash - API Client Library
+# Dash - API Client Library
+Library for interacting with the [Dash](https://www.dashplatform.com/) API documented [here](https://api.dashplatform.com/v1/docs).
 
-_Additional documentation to follow._
-
-## Installing Dash API Client
+## Installation
+### Requirements
+| Client Version | PHP Version Required |
+|----------------|----------------------|
+|        3       |        >= 7.2        |
+|      <= 2      |        >= 5.6        |
 
 ### With Composer
 The recommended way to install Dash API Client is through
@@ -43,7 +47,4 @@ The client is a simple wrapper around the Guzzle HTTP library and as such any Gu
 $response = $client->get($uri, $options);
 ```
 
-Making calls to the Dash API requires that you have a valid access token so make sure you authenticate with the API before making any other calls. Once you have an access token, it will automatically be added to all subsequent calls.
-```php
-$response = $client->authenticate()->get($uri, $options);
-```
+See [Docs](docs/index.md).

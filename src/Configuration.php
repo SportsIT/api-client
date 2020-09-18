@@ -4,22 +4,23 @@ namespace Dash;
 
 class Configuration {
   /**
-   * @var string $clientID
+   * @var string
    */
   private $clientID;
 
   /**
-   * @var string $clientSecret
+   * @var string
    */
   private $clientSecret;
 
   /**
-   * @var string $companyCode
+   * @var string
    */
   private $companyCode;
 
   /**
    * Configuration constructor.
+   *
    * @param string $clientID
    * @param string $clientSecret
    * @param string $companyCode

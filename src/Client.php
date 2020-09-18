@@ -2,52 +2,56 @@
 
 namespace Dash;
 
+use Dash\Builders\IndexRequestBuilder;
 use Dash\Exceptions\AuthException;
 use Dash\Exceptions\NotAuthenticatedException;
+use Dash\Models\Item;
+use Dash\Utils\BuildsUris;
 
 /**
- * Class Client
- * @package Dash
+ * Class Client.
  *
  * @mixin \GuzzleHttp\Client
  */
 class Client {
-  const API_BASE_URL = 'https://api.dashplatform.com/api/v1/';
-
   const AUTH_GRANT_TYPE = 'client_credentials';
 
-  /**
-   * @var \GuzzleHttp\Client $guzzle
-   */
-  private $guzzle;
+  const VERSION = '3.0.0';
 
   /**
-   * @var Configuration $config
+   * @var \GuzzleHttp\Client
+   */
+  private $client;
+
+  /**
+   * @var Configuration
    */
   private $config;
 
   /**
-   * @var string $token
+   * @var string
    */
   private $token;
 
   /**
    * Client constructor.
+   *
    * @param Configuration $config
    */
   public function __construct(Configuration $config) {
     $this->config = $config;
-    $this->guzzle = $this->buildGuzzleClient();
+    $this->refreshClient();
   }
 
   /**
-   * Authenticate with the API and get an access token
+   * Authenticate with the API and get an access token.
+   *
+   * @throws AuthException
    *
    * @return $this
-   * @throws AuthException
    */
   public function authenticate() {
-    $response = $this->guzzle->post('company/auth/token', [
+    $response = $this->client->post('company/auth/token', [
       'query' => [
         'company' => $this->config->getCompanyCode(),
       ],
@@ -58,142 +62,207 @@ class Client {
       ],
     ]);
 
-    $body = json_decode($response->getBody()->getContents(), true);
+    $body = json_decode($response->getBody()->getContents(), true) ?? [];
 
-    if ($response->getStatusCode() !== 200 || $body['auth'] === false) {
+    if ($response->getStatusCode() !== 200 || !isset($body['auth']) || $body['auth'] === false) {
       throw new AuthException("Error when authorizing: {$body['message']}");
     }
 
     $this->token = $body['access_token'];
 
-    $this->guzzle = $this->buildGuzzleClient();
+    $this->refreshClient();
 
     return $this;
   }
 
-  /**
-   * Build a new Guzzle client with the current default request config
-   *
-   * @return \GuzzleHttp\Client
-   */
-  protected function buildGuzzleClient() {
-    return new \GuzzleHttp\Client($this->buildGuzzleConfig());
+  protected function refreshClient() {
+    $this->client = (new GuzzleFactory())->make($this->token);
+    Item::setDocumentClient((new DocumentClientFactory())->make($this->token));
   }
 
   /**
-   * Build the default request config for the Guzzle client using the current state
+   * Get a builder to access a resource.
    *
-   * @return array
+   * @param string $resourceType
+   *
+   * @return IndexRequestBuilder
    */
-  protected function buildGuzzleConfig() {
-    $config = [
-      'base_uri' => static::API_BASE_URL,
-    ];
-
-    if (isset($this->token)) {
-      $config['headers'] = [
-        'Authorization' => "Bearer {$this->token}",
-      ];
-    }
-
-    return $config;
+  public function resource(string $resourceType) {
+    return new IndexRequestBuilder((new DocumentClientFactory())->make($this->token), $resourceType);
   }
 
   /**
-   * @param string $resource
-   * @param array $filters
-   * @param array $includes
+   * Make an index request to search all instances of the given resource type.
+   *
+   * @param string      $resourceType
+   * @param array       $filters
+   * @param array       $includes
    * @param string|null $sort
-   * @param PageObject|null $page
-   * @param array $custom
-   * @return string
+   *
+   * @return \Psr\Http\Message\ResponseInterface
    */
-  public static function buildIndexRequestUri(
-      $resource,
-      $filters = [],
-      $includes = [],
-      $sort = null,
-      PageObject $page = null,
-      $custom = []
-  ) {
-    $uri = '';
-
-    if (!empty($filters)) {
-      $filtersStr = '';
-
-      foreach ($filters as $key => $value) {
-        $filtersStr = static::addParameterSeparator($filtersStr, '') . "filter[{$key}]={$value}";
-      }
-
-      $uri = "?{$filtersStr}";
-    }
-
-    if (!empty($includes)) {
-      $includeStr = '';
-
-      foreach ($includes as $include) {
-        $includeStr = static::addParameterSeparator($includeStr, 'include=', ',') . $include;
-      }
-
-      $uri = static::addParameterSeparator($uri) . $includeStr;
-    }
-
-    if (isset($sort)) {
-      $uri = static::addParameterSeparator($uri) . $sort;
-    }
-
-    if (isset($page)) {
-      if ($page->getPageNumber() !== null) {
-        $uri = static::addParameterSeparator($uri) . 'page[number]=' . $page->getPageNumber();
-      }
-
-      if ($page->getPageSize() !== null) {
-        $uri = static::addParameterSeparator($uri) . 'page[size]=' . $page->getPageSize();
-      }
-    }
-
-    if (!empty($custom)) {
-      $customStr = '';
-
-      foreach ($custom as $parameterName => $parameterValue) {
-        $customStr = static::addParameterSeparator($customStr, "{$parameterName}=", ',') . $parameterValue;
-      }
-
-      $uri = static::addParameterSeparator($uri) . $customStr;
-    }
-
-    return "{$resource}{$uri}";
+  public function search(string $resourceType, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->get(BuildsUris::buildIndexRequestUri($resourceType, $filters, $includes, $sort));
   }
 
   /**
-   * @param string $str
-   * @param string $empty
-   * @param string $else
-   * @return string
+   * Make a request to fetch the given resource by resource type and id.
+   *
+   * @param string      $resourceType
+   * @param string      $id
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
+   *
+   * @return \Psr\Http\Message\ResponseInterface
    */
-  protected static function addParameterSeparator($str, $empty = '?', $else = '&') {
-    if ($str === '') {
-      $str .= $empty;
-    } else {
-      $str .= $else;
-    }
-
-    return $str;
+  public function find(string $resourceType, $id, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->get(BuildsUris::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort));
   }
 
   /**
-   * Proxy calls to the underlying Guzzle client
+   * Make a request to fetch related resources for the given resource's relation.
+   *
+   * @param string      $resourceType
+   * @param string      $id
+   * @param string      $relationName
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function getRelatedResources(string $resourceType, $id, string $relationName, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->get(BuildsUris::buildRelatedResourceRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
+  }
+
+  /**
+   * Make a request to fetch the given relationship for a resource.
+   *
+   * @param string      $resourceType
+   * @param string      $id
+   * @param string      $relationName
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function getRelationship(string $resourceType, $id, string $relationName, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->get(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName, $filters, $includes, $sort));
+  }
+
+  /**
+   * Make a request to create a resource of the given resource type.
+   *
+   * @param string      $resourceType
+   * @param array       $data
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function createResource(string $resourceType, array $data, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->post(BuildsUris::buildIndexRequestUri($resourceType, $filters, $includes, $sort), [
+      'json' => $data,
+    ]);
+  }
+
+  /**
+   * Make a request to update a given resource.
+   * Relationships can be updated as well, with to-many relationships doing a full replacement.
+   *
+   * @param string      $resourceType
+   * @param string      $id
+   * @param array       $data
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function updateResource(string $resourceType, $id, array $data, array $filters = [], array $includes = [], ?string $sort = null) {
+    return $this->client->patch(BuildsUris::buildResourceRequestUri($resourceType, $id, $filters, $includes, $sort), [
+      'json' => $data,
+    ]);
+  }
+
+  /**
+   * Make a request to delete a given resource.
+   *
+   * @param string $resourceType
+   * @param string $id
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function deleteResource(string $resourceType, $id) {
+    return $this->client->delete(BuildsUris::buildResourceRequestUri($resourceType, $id));
+  }
+
+  /**
+   * Make a request to add to a given resource's to-many relationship.
+   *
+   * @param string $resourceType
+   * @param string $id
+   * @param string $relationName
+   * @param array  $data
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function appendToManyRelation(string $resourceType, $id, string $relationName, array $data) {
+    return $this->client->post(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+      'json' => $data,
+    ]);
+  }
+
+  /**
+   * Make a request to do a full replace for a given resource's to-many relationship.
+   *
+   * @param string $resourceType
+   * @param string $id
+   * @param string $relationName
+   * @param array  $data
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function replaceToManyRelation(string $resourceType, $id, string $relationName, array $data) {
+    return $this->client->patch(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+      'json' => $data,
+    ]);
+  }
+
+  /**
+   * Make a request to delete from a given resource's to-many relationship.
+   *
+   * @param string $resourceType
+   * @param string $id
+   * @param string $relationName
+   * @param array  $data
+   *
+   * @return \Psr\Http\Message\ResponseInterface
+   */
+  public function deleteFromToManyRelation(string $resourceType, $id, string $relationName, array $data) {
+    return $this->client->delete(BuildsUris::buildRelationshipRequestUri($resourceType, $id, $relationName), [
+      'json' => $data,
+    ]);
+  }
+
+  /**
+   * Proxy calls to the underlying Guzzle client.
    *
    * @param $name
    * @param $arguments
-   * @return mixed
+   *
    * @throws NotAuthenticatedException
+   *
+   * @return mixed
    */
   public function __call($name, $arguments) {
     if (!isset($this->token)) {
       throw new NotAuthenticatedException('Error: Need to authenticate before making API calls');
     }
 
-    return $this->guzzle->{$name}(...$arguments);
+    return $this->client->{$name}(...$arguments);
   }
 }
