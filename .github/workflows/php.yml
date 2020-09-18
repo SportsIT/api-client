@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Extract info
+        uses: Dovyski/payload-info-action@master
+        id: infos
+        with:
+          filter_push: '.'
+          filter_pull_request: '.pull_request.'
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -37,12 +44,22 @@ jobs:
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php-
+
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
-      - name: Check Style
-        run: .github/phpcs.sh
+      - name: Check Style Push
+        if: steps.infos.output.pull_request == false
+        env:
+          COMMIT_RANGE: ${{ github.event.before }}...${{ github.event.after }}
+        run: sudo .github/phpcs.sh
+
+      - name: Check Style Pull Request
+        if: steps.infos.output.pull_request == true
+        env:
+          COMMIT_RANGE: ${{ github.event.pull_request.base.sha }}...${{ github.event.head.sha }}
+        run: sudo .github/phpcs.sh
 
       - name: Run Phan
         env:
