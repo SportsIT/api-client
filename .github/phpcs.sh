@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRTUXB "${COMMIT_RANGE}")
 GIT_ROOT_DIR=$(git rev-parse --show-toplevel)
 
