@@ -67,9 +67,9 @@ class BuildsUris {
   /**
    * Build the query parameters for a request.
    *
-   * @param array $filters
-   * @param array $includes
-   * @param string|null  $sort
+   * @param array       $filters
+   * @param array       $includes
+   * @param string|null $sort
    *
    * @return string
    */

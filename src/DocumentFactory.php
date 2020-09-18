@@ -13,8 +13,8 @@ use Dash\Responses\ItemDocument;
 class DocumentFactory {
   /**
    * @param DataInterface $data
+   * @param bool          $withRelations
    *
-   * @param bool $withRelations
    * @return ItemDocument|CollectionDocument
    */
   public function make(DataInterface $data, bool $withRelations = true): DocumentInterface {

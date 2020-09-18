@@ -18,6 +18,7 @@ interface DocumentInterface {
 
   /**
    * @param BaseRequestBuilder|null $request
+   *
    * @return $this
    */
   public function setRequest(?BaseRequestBuilder $request);

@@ -2,7 +2,6 @@
 
 namespace Dash\Tests\Relations;
 
-use Dash\Concerns\HasRelations;
 use Dash\Interfaces\ItemInterface;
 use Dash\Models\Item;
 use Dash\Relations\HasOneRelation;

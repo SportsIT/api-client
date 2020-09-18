@@ -19,7 +19,7 @@ class DocumentClient {
 
   /**
    * @param \GuzzleHttp\Client $client
-   * @param ResponseParser  $parser
+   * @param ResponseParser     $parser
    */
   public function __construct(\GuzzleHttp\Client $client, ResponseParser $parser) {
     $this->client = $client;

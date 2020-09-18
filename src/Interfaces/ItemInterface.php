@@ -139,36 +139,42 @@ interface ItemInterface extends DataInterface {
 
   /**
    * @param string $name
+   *
    * @return HasOneRelation|HasManyRelation|null
    */
   public function getRelation(string $name);
 
   /**
    * @param string $name
+   *
    * @return DataInterface|null
    */
   public function getRelationValue(string $name);
 
   /**
    * @param string $name
+   *
    * @return bool
    */
   public function hasRelation(string $name): bool;
 
   /**
    * @param string $name
+   *
    * @return $this
    */
   public function unsetRelation(string $name);
 
   /**
    * @param string $name
+   *
    * @return HasOneRelation
    */
   public function hasOne(string $name): HasOneRelation;
 
   /**
    * @param string $name
+   *
    * @return HasManyRelation
    */
   public function hasMany(string $name): HasManyRelation;

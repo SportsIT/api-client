@@ -183,6 +183,7 @@ class Item extends Model implements ItemInterface {
    * Get an instance of Item of the given type.
    *
    * @param string $resourceType
+   *
    * @return Item
    */
   public static function ofType(string $resourceType) {
