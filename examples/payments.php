@@ -5,8 +5,6 @@ $clientID = '<replace with client ID>';
 $clientSecret = '<replace with client secret>';
 $companyCode = '<replace with company code>';
 
-$dateFormat = 'Y-m-d\TH:i:s';
-
 $config = new \Dash\Configuration($clientID, $clientSecret, $companyCode);
 // Call authenticate to get an access token
 $client = (new \Dash\Client($config))->authenticate();
@@ -16,8 +14,8 @@ $nextDay = (clone $targetDate)->modify('+1 day');
 
 // get all payments made between the start of the target day and the start of the next day
 $filters = [
-  'date__gte' => $targetDate->format($dateFormat),
-  'date__lt' => $nextDay->format($dateFormat),
+  'date__gte' => $targetDate->format(\Dash\Client::DATE_FORMAT),
+  'date__lt' => $nextDay->format(\Dash\Client::DATE_FORMAT),
 ];
 
 // include the facility and payment type relationships for all matching records
