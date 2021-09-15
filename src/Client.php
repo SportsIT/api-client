@@ -16,6 +16,8 @@ class Client {
 
   const AUTH_GRANT_TYPE = 'client_credentials';
 
+  const DATE_FORMAT = 'Y-m-d\TH:i:s';
+
   /**
    * @var \GuzzleHttp\Client $guzzle
    */

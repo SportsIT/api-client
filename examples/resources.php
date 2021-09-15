@@ -5,8 +5,6 @@ $clientID = '<replace with client ID>';
 $clientSecret = '<replace with client secret>';
 $companyCode = '<replace with company code>';
 
-$dateFormat = 'Y-m-d\TH:i:s';
-
 $config = new \Dash\Configuration($clientID, $clientSecret, $companyCode);
 $client = new \Dash\Client($config);
 
